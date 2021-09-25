@@ -12,41 +12,58 @@ const DISTORTION_OPTIONS = {
 };
 const distortion = DISTORTION_OPTIONS.NONE; //DISTORTION_OPTIONS.WARP;
 
-function Tree(numLeaves, branchLength = 4) {
-  this.qt = new QuadTree(new Rect(0, 0, width, height), 4);
+const defaultOptions = {
+  width: 400, // canvasSize
+  height: 400, // canvasSize
+  numLeaves: 500, // attractors
+  branchLength: 4,
+  maxDist: 96,
+  minDist: 24,
+  angle: 120,
+}
+
+function Tree(options) {
+  this.angle = options?.angle ?? defaultOptions.angle;
+  this.branchLength = options?.branchLength ?? defaultOptions.branchLength;
+  this.height = options?.height ?? defaultOptions.height;
+  this.numLeaves = options?.numLeaves ?? defaultOptions.numLeaves;
+  this.maxDist = options?.maxDist ?? defaultOptions.maxDist;
+  this.minDist = options?.minDist ?? defaultOptions.minDist;
+  this.width = options?.width ?? defaultOptions.width;
+
+  const MAXDIST_3 = this.maxDist * 3.0;
+  const MAXDIST_3over2 = MAXDIST_3 * 0.5;
+
+  this.qt = new QuadTree(new Rect(0, 0, this.width, this.height), 4);
   this.leaves = [];
 
-  let l = numLeaves || 500;
-
   // Create some leaves
-  let w = 0;
-  let offset = width / 10;
-  let nw = width - 2 * offset;
-  let nh = height - 2 * offset;
-  for (var i = 0; i < l; i++) {
-    w = Math.ceil(Math.random() * 10);
+  let weight = 0;
+  let offset = this.width / 10;
+  let nw = this.width - 2 * offset;
+  let nh = this.height - 2 * offset;
+
+  for (var i = 0, len = this.numLeaves; i < len; i++) {
+    weight = Math.ceil(Math.random() * 10);
     // Skip if the leaf/attractor would be inside the circle
     let x = Math.floor(Math.random()*nw);
     let y = Math.floor(Math.random()*nh);
-    let xr = x - nw/2;
-    let yr = y - nh/2;
+    // let xr = x - nw/2;
+    // let yr = y - nh/2;
     // let sdfContainer = 1.0; // Math.sign(4*offset - Math.sqrt(xr * xr + yr * yr));
     // let sdfBite = 1.0;// Math.sign(Math.sqrt(xr * xr + yr * yr) - 2*offset);
     // if (sdfContainer > 0 && sdfBite > 0) {
       this.leaves.push(new Leaf(
-        w, // weight
+        weight, // weight
         createVector(offset + x, offset + y)
       ));
     // }
   }
 
   // Set up the trunk/root
-  // var pos = createVector(width * 0.25, height * 0.25);
-  var pos = createVector(width * 0.5, height * 0.5);
-  // var pos = createVector(Math.random()*0.2*width + width * 0.5, height * 0.5);
-  // var pos = createVector(Math.random()*0.2*width + width * 0.75, height * 0.2);
+  var pos = createVector(this.width * 0.5, this.height * 0.5);
   var dir = createVector(0, 1.0);
-  var root = new Branch(null, pos, dir, branchLength);
+  var root = new Branch(null, pos, dir, this.branchLength);
 
   this.qt.insert(root);
 
@@ -57,7 +74,7 @@ function Tree(numLeaves, branchLength = 4) {
   while (!found) {
     this.leaves.forEach(leaf => {
       var d = p5.Vector.dist(current.pos, leaf.pos);
-      if (d < MAXDIST) {
+      if (d < this.maxDist) {
         found = true;
       }
     });
@@ -72,7 +89,7 @@ function Tree(numLeaves, branchLength = 4) {
 
     this.leaves.forEach(leaf => {
       var closestBranch = null;
-      var record = MAXDIST;
+      var record = this.maxDist;
       
       // ** DISRUPT THE LEAFS/FOODSOURCE
       switch (distortion) {
@@ -105,7 +122,7 @@ function Tree(numLeaves, branchLength = 4) {
       branches.forEach(branch => {
         if (leaf.reached) return;
         var d = p5.Vector.dist(leaf.pos, branch.pos);
-        if (d < MINDIST) {
+        if (d < this.minDist) {
           leaf.reached = true;
           closestBranch = null;
         } else if (d < record) {
@@ -148,13 +165,13 @@ function Tree(numLeaves, branchLength = 4) {
         // branch.dir.rotate(random(-15, 15));
 
         /* OR, Round to the nearest N degrees */
-        // let theta = Math.round(branch.dir.heading() / N) * N;
+        // let theta = Math.round(branch.dir.heading() / this.angle) * this.angle;
         
         /* OR, Round to the nearest N degrees and force left-hand turns */
-        let theta = Math.floor(branch.dir.heading() / N) * N;
+        let theta = Math.floor(branch.dir.heading() / this.angle) * this.angle;
         
         // OR, Round to the nearest N degrees and force right-hand turns
-        // let theta = Math.ceil(branch.dir.heading() / N) * N;
+        // let theta = Math.ceil(branch.dir.heading() / this.angle) * this.angle;
         
         branch.dir.rotate(theta - branch.dir.heading());
         // console.log(theta);
