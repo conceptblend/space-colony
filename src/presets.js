@@ -28,14 +28,24 @@ const presets = {
     canvasSize: 540 * 2
   },
   shrug: {
+    description: "Triangular with closed sections",
     lifespan: 48,
     maxDist: 32,
-    minDist: 24,
+    minDist: 12,
     branchLength: 8,
     attractors: 25000,
     angle: 120,
     canvasSize: 600 /*540 * 2*/
   },
+  box: {
+    lifespan: 48,
+    maxDist: 24,
+    minDist: 12,
+    branchLength: 4,
+    attractors: 25000,
+    angle: 90,
+    canvasSize: 600 /*540 * 2*/
+  },
 };
 
-const CONFIG = presets.shrug;
+const CONFIG = presets.box;
