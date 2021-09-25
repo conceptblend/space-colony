@@ -12,7 +12,7 @@ const SHOWINPROGESS = true;
 /**
  * ==== EXPORT CONFIGURATION
  */
-const EXPORT = !true;
+const EXPORT = true;
 const EXPORT_METHODS = {
   svg: {
     id: 0x01,
@@ -101,7 +101,7 @@ function draw() {
 
     console.log( `Runtime: ${( t_end - t_start )/1000}s` );
     if ( EXPORT ) {
-      save( `SpaceColonization-Bizarre-min_${MINDIST}-max_${MAXDIST}-lifespan_${LIFESPAN}-attrCount_${ATTRACTORCOUNT}-N_${N}-length_${BRANCH_LENGTH}-${new Date(t_start).toISOString()}.${EXPORTMETHOD.extension}` );
+      save( `SpaceColonization-Bizarre-min_${CONFIG.minDist}-max_${CONFIG.maxDist}-lifespan_${CONFIG.lifespan}-attrCount_${CONFIG.attractors}-N_${CONFIG.angle}-length_${CONFIG.branchLength}-${new Date(t_start).toISOString()}.${EXPORTMETHOD.extension}` );
     }
 
     noLoop();
