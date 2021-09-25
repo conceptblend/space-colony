@@ -22,6 +22,22 @@ const ATTRACTORCOUNT = CONFIG.attractors; // 25000
 const SHOWINPROGESS = true;
 
 const EXPORT = !true;
+const EXPORT_METHODS = {
+  svg: {
+    id: 0x01,
+    extension: "svg"
+  },
+  jpg: {
+    id: 0x02,
+    extension: "jpg"
+  },
+  png: {
+    id: 0x03,
+    extension: "png"
+  },
+};
+
+const EXPORTMETHOD = EXPORT_METHODS.jpg;
 
 let iterations = LIFESPAN;
 
@@ -32,7 +48,7 @@ let bgColor;
 let fgColor;
 
 function setup() {
-  if ( EXPORT ) {
+  if ( EXPORT && EXPORTMETHOD.id === EXPORT_METHODS.svg.id ) {
     createCanvas(CANVASSIZE, CANVASSIZE, SVG); // MUCH SLOWER but necessary for the SVG exports
   } else {
     createCanvas(CANVASSIZE, CANVASSIZE); // Good for testing or for digital outputs
@@ -73,11 +89,9 @@ function draw() {
 
     console.log( `Runtime: ${( t_end - t_start )/1000}s` );
     if ( EXPORT ) {
-      
-      save( `SpaceColonization-Bizarre-min_${MINDIST}-max_${MAXDIST}-lifespan_${LIFESPAN}-attrCount_${ATTRACTORCOUNT}-N_${N}-length_${BRANCH_LENGTH}-${new Date(t_start).toISOString()}.svg` );
-      // save(`SpaceColonization-Bizarre-min_${MINDIST}-max_${MAXDIST}-lifespan_${lifespan}-attrCount_${ATTRACTORCOUNT}-N_${N}-${new Date(t_start).toISOString()}.jpg`);
+      save( `SpaceColonization-Bizarre-min_${MINDIST}-max_${MAXDIST}-lifespan_${LIFESPAN}-attrCount_${ATTRACTORCOUNT}-N_${N}-length_${BRANCH_LENGTH}-${new Date(t_start).toISOString()}.${EXPORTMETHOD.extension}` );
     }
-    
+
     noLoop();
   }
 }
