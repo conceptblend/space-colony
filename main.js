@@ -74,7 +74,7 @@ function draw() {
     console.log( `Runtime: ${( t_end - t_start )/1000}s` );
     if ( EXPORT ) {
       
-      save( `SpaceColonization-Bizarre-min_${MINDIST}-max_${MAXDIST}-lifespan_${lifespan}-attrCount_${ATTRACTORCOUNT}-N_${N}-length_${BRANCH_LENGTH}-${new Date(t_start).toISOString()}.svg` );
+      save( `SpaceColonization-Bizarre-min_${MINDIST}-max_${MAXDIST}-lifespan_${LIFESPAN}-attrCount_${ATTRACTORCOUNT}-N_${N}-length_${BRANCH_LENGTH}-${new Date(t_start).toISOString()}.svg` );
       // save(`SpaceColonization-Bizarre-min_${MINDIST}-max_${MAXDIST}-lifespan_${lifespan}-attrCount_${ATTRACTORCOUNT}-N_${N}-${new Date(t_start).toISOString()}.jpg`);
     }
     
