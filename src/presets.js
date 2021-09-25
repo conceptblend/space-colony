@@ -16,7 +16,7 @@ const presets = {
     branchLength: 12,
     attractors: 25000,
     angle: 120,
-    canvasSize: 600 /*540 * 2*/
+    canvasSize: 540 * 2
   },
   two: {
     lifespan: 24,
@@ -27,6 +27,15 @@ const presets = {
     angle: 90,
     canvasSize: 540 * 2
   },
+  shrug: {
+    lifespan: 48,
+    maxDist: 32,
+    minDist: 24,
+    branchLength: 8,
+    attractors: 25000,
+    angle: 120,
+    canvasSize: 600 /*540 * 2*/
+  },
 };
 
-const CONFIG = presets.zero;
+const CONFIG = presets.shrug;
