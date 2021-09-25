@@ -1,0 +1,31 @@
+{
+  "name": "space-colony",
+  "version": "1.0.0",
+  "description": "Parameterized drawings using a Space Colonization algorithm.",
+  "main": "./src/index.html",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "start": "./node_modules/.bin/http-server ./src",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/conceptblend/space-colony.git"
+  },
+  "keywords": [
+    "generative drawing",
+    "parameter art",
+    "generative art"
+  ],
+  "author": "Andrew J Wright",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/conceptblend/space-colony/issues"
+  },
+  "homepage": "https://github.com/conceptblend/space-colony#readme",
+  "dependencies": {
+    "http-server": "^13.0.2"
+  }
+}
