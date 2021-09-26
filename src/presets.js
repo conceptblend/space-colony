@@ -58,6 +58,28 @@ const presets = {
     canvasSize: 1080, /*540 * 2*/
     steering: /* src: tree.js */STEERING_OPTIONS.LEFT_ROUNDING,
   },
+  processingCommunity2: {
+    description: "Balanced parameters to get the rich, tightly packed output we want! But a little wonkier.",
+    lifespan: 72,
+    maxDist: 24,
+    minDist: 12,
+    branchLength: 10,
+    attractors: 25000,
+    angle: 120,
+    canvasSize: 1080, /*540 * 2*/
+    steering: /* src: tree.js */STEERING_OPTIONS.LEFT_ROUNDING,
+  },
+  processingCommunity3: {
+    description: "Use for hte circles at 90. Balanced parameters to get the rich, tightly packed output we want! But a little wonkier.",
+    lifespan: 48,
+    maxDist: 24,
+    minDist: 12,
+    branchLength: 4,
+    attractors: 25000,
+    angle: 90,
+    canvasSize: 600, /*540 * 2*/
+    steering: /* src: tree.js */STEERING_OPTIONS.LEFT_ROUNDING,
+  },
 };
 
-const CONFIG = presets.processingCommunity;
+const CONFIG = presets.processingCommunity3;
