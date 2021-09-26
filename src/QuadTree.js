@@ -1,12 +1,5 @@
-// class Point {
-//   constructor(x, y) {
-//     this.x = x;
-//     this.y = y;
-//   }
-// }
-
 class Rect {
-  constructor(x, y, w, h) {
+  constructor( x, y, w, h ) {
     this.x = x;
     this.y = y;
     this.w = w;
@@ -19,12 +12,12 @@ class Rect {
     this.mx = x + w / 2;
     this.my = y + h / 2;
   }
-  contains(node) {
+  contains( node ) {
     return (node.pos.x >= this.l && node.pos.x < this.r &&
       node.pos.y >= this.t && node.pos.y < this.b);
   }
 
-  intersects(range) {
+  intersects( range ) {
     //
     if (this.l > range.r || this.r < range.l) return false;
     if (this.t > range.b || this.b < range.t) return false;
@@ -51,10 +44,10 @@ class QuadTree {
   }
 
   subdivide() {
-    if (this.region.w <= 1 || this.region.h <= 1) return false;
+    if ( this.region.w <= 1 || this.region.h <= 1 ) return false;
 
-    let halfW = this.region.w / 2;
-    let halfH = this.region.h / 2;
+    let halfW = this.region.w * 0.5;
+    let halfH = this.region.h * 0.5;
 
     this.subregions.nw = new QuadTree(
       new Rect(
@@ -96,20 +89,20 @@ class QuadTree {
     return this.divided;
   }
 
-  query(range) {
+  query( range ) {
     let found = [];
 
-    if (!this.region.intersects(range)) return found; // empty array
+    if ( !this.region.intersects( range ) ) return found; // empty array
 
-    if (this.divided) {
-      found = found.concat(this.subregions.nw.query(range));
-      found = found.concat(this.subregions.ne.query(range));
-      found = found.concat(this.subregions.sw.query(range));
-      found = found.concat(this.subregions.se.query(range));
+    if ( this.divided ) {
+      found = found.concat( this.subregions.nw.query( range ) );
+      found = found.concat( this.subregions.ne.query( range ) );
+      found = found.concat( this.subregions.sw.query( range ) );
+      found = found.concat( this.subregions.se.query( range ) );
     } else {
       this.nodes.forEach(p => {
-        if (range.contains(p)) {
-          found.push(p);
+        if ( range.contains( p ) ) {
+          found.push( p );
         }
       });
     }
@@ -119,7 +112,7 @@ class QuadTree {
   flatten() {
     let found = [];
 
-    if (this.divided) {
+    if ( this.divided ) {
       found = found.concat(
         this.subregions.nw.flatten(),
         this.subregions.ne.flatten(),
@@ -127,29 +120,29 @@ class QuadTree {
         this.subregions.se.flatten()
       );
     } else {
-      found = found.concat(this.nodes);
+      found = found.concat( this.nodes );
     }
     return found;
   }
 
   insert(node) {
-    if (!this.region.contains(node)) return false; // not in my region
+    if ( !this.region.contains( node ) ) return false; // not in my region
 
-    if (this.hasCapacity() && !this.divided) {
+    if ( this.hasCapacity() && !this.divided ) {
       this.nodes.push(node);
       return true;
     } else {
       // subdivide and insert
-      if (!this.divided) {
+      if ( !this.divided ) {
         let couldDivide = this.subdivide();
 
         // If we're down to the unit cell, stop subdividing
-        if (couldDivide) {
+        if ( couldDivide ) {
           // insert all previous nodes
           let n = this.nodes.length;
-          for (var p = 0; p < n; p++) {
+          for ( var p = 0; p < n; p++ ) {
             // attempt to insert into child regions
-            this.insertIntoRegion(this.nodes.pop());
+            this.insertIntoRegion( this.nodes.pop() );
           }
         } else {
           // console.log("lost a node");
@@ -157,16 +150,16 @@ class QuadTree {
         }
       }
       // attempt to insert into child regions
-      return this.insertIntoRegion(node);
+      return this.insertIntoRegion( node );
     }
     return false;
   }
 
   insertIntoRegion(node) {
-    if (this.subregions.nw.insert(node)) return true;
-    if (this.subregions.ne.insert(node)) return true;
-    if (this.subregions.sw.insert(node)) return true;
-    if (this.subregions.se.insert(node)) return true;
+    if ( this.subregions.nw.insert( node ) ) return true;
+    if ( this.subregions.ne.insert( node ) ) return true;
+    if ( this.subregions.sw.insert( node ) ) return true;
+    if ( this.subregions.se.insert( node ) ) return true;
   }
 
   print() {
