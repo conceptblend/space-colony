@@ -41,11 +41,23 @@ const presets = {
     lifespan: 48,
     maxDist: 24,
     minDist: 12,
-    branchLength: 4,
+    branchLength: 8,
     attractors: 25000,
     angle: 90,
-    canvasSize: 600 /*540 * 2*/
+    canvasSize: 600, /*540 * 2*/
+    steering: /* src: tree.js */STEERING_OPTIONS.RIGHT_ROUNDING,
+  },
+  processingCommunity: {
+    description: "Balanced parameters to get the rich, tightly packed output we want!",
+    lifespan: 96,
+    maxDist: 24,
+    minDist: 8,
+    branchLength: 4,
+    attractors: 25000,
+    angle: 120,
+    canvasSize: 1080, /*540 * 2*/
+    steering: /* src: tree.js */STEERING_OPTIONS.LEFT_ROUNDING,
   },
 };
 
-const CONFIG = presets.box;
+const CONFIG = presets.processingCommunity;

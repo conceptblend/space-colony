@@ -12,6 +12,12 @@ const DISTORTION_OPTIONS = {
 };
 const distortion = DISTORTION_OPTIONS.NONE; //DISTORTION_OPTIONS.WARP;
 
+const STEERING_OPTIONS = {
+  NONE: 0x01,
+  ROUNDING: 0x02,
+  LEFT_ROUNDING: 0x03,
+  RIGHT_ROUNDING: 0x04,
+};
 const defaultOptions = {
   width: 400, // canvasSize
   height: 400, // canvasSize
@@ -20,6 +26,7 @@ const defaultOptions = {
   maxDist: 96,
   minDist: 24,
   angle: 120,
+  steering: STEERING_OPTIONS.LEFT_ROUNDING,
 }
 
 function Tree(options) {
@@ -30,6 +37,7 @@ function Tree(options) {
   this.maxDist = options?.maxDist ?? defaultOptions.maxDist;
   this.minDist = options?.minDist ?? defaultOptions.minDist;
   this.width = options?.width ?? defaultOptions.width;
+  this.steering = options?.steering ?? defaultOptions.steering;
 
   const MAXDIST_3 = this.maxDist * 3.0;
   const MAXDIST_3over2 = MAXDIST_3 * 0.5;
@@ -48,16 +56,17 @@ function Tree(options) {
     // Skip if the leaf/attractor would be inside the circle
     let x = Math.floor(Math.random()*nw);
     let y = Math.floor(Math.random()*nh);
-    // let xr = x - nw/2;
-    // let yr = y - nh/2;
-    // let sdfContainer = 1.0; // Math.sign(4*offset - Math.sqrt(xr * xr + yr * yr));
+    let xr = x - nw/2;
+    let yr = y - nh/2;
+    let sdfContainer = Math.sign(4*offset - Math.sqrt(xr * xr + yr * yr));
     // let sdfBite = 1.0;// Math.sign(Math.sqrt(xr * xr + yr * yr) - 2*offset);
     // if (sdfContainer > 0 && sdfBite > 0) {
+    if ( sdfContainer > 0 ) {
       this.leaves.push(new Leaf(
         weight, // weight
         createVector(offset + x, offset + y)
       ));
-    // }
+    }
   }
 
   // Set up the trunk/root
@@ -92,7 +101,7 @@ function Tree(options) {
       var record = this.maxDist;
       
       // ** DISRUPT THE LEAFS/FOODSOURCE
-      switch (distortion) {
+      switch ( distortion ) {
         case DISTORTION_OPTIONS.SINWAVE1:
           leaf.pos.add(sin(0.5*leaf.pos.y), 0);
           break;
@@ -164,16 +173,29 @@ function Tree(options) {
         // Adds gentle wobble or squiggle to the paths.
         // branch.dir.rotate(random(-15, 15));
 
-        /* OR, Round to the nearest N degrees */
-        // let theta = Math.round(branch.dir.heading() / this.angle) * this.angle;
+        let theta;
+        switch ( this.steering ) {
+          case STEERING_OPTIONS.LEFT_ROUNDING:
+            /* OR, Round to the nearest N degrees and force left-hand turns */
+            theta = Math.floor(branch.dir.heading() / this.angle) * this.angle;
+            break;
+          case STEERING_OPTIONS.RIGHT_ROUNDING:
+            // OR, Round to the nearest N degrees and force right-hand turns
+            theta = Math.ceil(branch.dir.heading() / this.angle) * this.angle;
+            break;
+          case STEERING_OPTIONS.ROUNDING:
+            /* OR, Round to the nearest N degrees */
+            theta = Math.round(branch.dir.heading() / this.angle) * this.angle;
+            break;
+          case STEERING_OPTIONS.NONE:
+          default:
+            break;
+        }
         
-        /* OR, Round to the nearest N degrees and force left-hand turns */
-        let theta = Math.floor(branch.dir.heading() / this.angle) * this.angle;
+        if ( theta !== undefined ) {
+          branch.dir.rotate(theta - branch.dir.heading());
+        }
         
-        // OR, Round to the nearest N degrees and force right-hand turns
-        // let theta = Math.ceil(branch.dir.heading() / this.angle) * this.angle;
-        
-        branch.dir.rotate(theta - branch.dir.heading());
         // console.log(theta);
         this.qt.insert(branch.next());
         branch.reset();
@@ -357,6 +379,20 @@ function Tree(options) {
     });
 
     return segments_optimized;
+  }
+
+  this.currentConfig = function () {
+    return {
+      angle: this.angle,
+      branchLength: this.branchLength,
+      canvasSize: this.width === this.height ? this.width : -1,
+      height: this.height,
+      numLeaves: this.numLeaves,
+      maxDist: this.maxDist,
+      minDist: this.minDist,
+      width: this.width,
+      steering: this.steering,
+    }
   }
 }
 
