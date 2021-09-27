@@ -1,3 +1,5 @@
+/// <reference path="../node_modules/@types/p5/global.d.ts" />
+
 // Inspired by:
 // Daniel Shiffman
 // http://patreon.com/codingtrain

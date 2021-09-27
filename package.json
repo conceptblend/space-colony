@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/conceptblend/space-colony#readme",
   "dependencies": {
+    "@types/p5": "^1.3.1",
     "http-server": "^13.0.2"
   }
 }
