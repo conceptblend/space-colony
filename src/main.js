@@ -27,7 +27,7 @@ const EXPORT_METHODS = {
     extension: "png"
   },
 };
-const EXPORTMETHOD = EXPORT_METHODS.svg;
+const EXPORTMETHOD = EXPORT_METHODS.jpg;
 /* /EXPORT CONFIGURATION */
 
 /**
@@ -57,11 +57,11 @@ function setup() {
   /**
    * ==== ENVIRONMENT initialization
    */
-  // if ( EXPORT && EXPORTMETHOD.id === EXPORT_METHODS.svg.id ) {
+  if ( EXPORTMETHOD.id === EXPORT_METHODS.svg.id ) {
     createCanvas( CONFIG.canvasSize, CONFIG.canvasSize, SVG ); // MUCH SLOWER but necessary for the SVG exports
-  // } else {
-    // createCanvas( CONFIG.canvasSize, CONFIG.canvasSize ); // Good for testing or for digital outputs
-  // }
+  } else {
+    createCanvas( CONFIG.canvasSize, CONFIG.canvasSize ); // Good for testing or for digital outputs
+  }
   angleMode( DEGREES );
   
   bgColor = color(238, 225, 221);
