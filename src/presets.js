@@ -80,6 +80,17 @@ const presets = {
     canvasSize: 600, /*540 * 2*/
     steering: /* src: tree.js */STEERING_OPTIONS.LEFT_ROUNDING,
   },
+  funfunfun: {
+    description: "harumph",
+    lifespan: 48,
+    maxDist: 24,
+    minDist: 8,
+    branchLength: 4,
+    attractors: 25000,
+    angle: 60,
+    canvasSize: 1080, /*540 * 2*/
+    steering: /* src: tree.js */STEERING_OPTIONS.LEFT_ROUNDING,
+  },
 };
 
-const CONFIG = presets.processingCommunity3;
+const CONFIG = presets.funfunfun;

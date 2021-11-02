@@ -10,7 +10,7 @@ const DISTORTION_OPTIONS = {
   SINWAVE3: 4,
   WARP: 5
 };
-const distortion = DISTORTION_OPTIONS.NONE; //DISTORTION_OPTIONS.WARP;
+const distortion = DISTORTION_OPTIONS.WARP; //DISTORTION_OPTIONS.WARP;
 
 const STEERING_OPTIONS = {
   NONE: 0x01,
@@ -38,6 +38,7 @@ function Tree(options) {
   this.minDist = options?.minDist ?? defaultOptions.minDist;
   this.width = options?.width ?? defaultOptions.width;
   this.steering = options?.steering ?? defaultOptions.steering;
+  this.seed = Math.random() * 512;
 
   const MAXDIST_3 = this.maxDist * 3.0;
   const MAXDIST_3over2 = MAXDIST_3 * 0.5;
@@ -58,7 +59,7 @@ function Tree(options) {
     let y = Math.floor(Math.random()*nh);
     let xr = x - nw/2;
     let yr = y - nh/2;
-    let sdfContainer = Math.sign(4*offset - Math.sqrt(xr * xr + yr * yr));
+    let sdfContainer = 1;//Math.sign(4*offset - Math.sqrt(xr * xr + yr * yr));
     // let sdfBite = 1.0;// Math.sign(Math.sqrt(xr * xr + yr * yr) - 2*offset);
     // if (sdfContainer > 0 && sdfBite > 0) {
     if ( sdfContainer > 0 ) {
@@ -112,7 +113,7 @@ function Tree(options) {
           leaf.pos.add(2*sin(4*leaf.pos.y), 0);
           break;
         case DISTORTION_OPTIONS.WARP:
-          leaf.pos.add(sin(leaf.pos.y), (0.5 + 0.5*cos(leaf.pos.x)) * 2);
+          leaf.pos.add(sin(leaf.pos.y + this.seed), (0.5 + 0.5*cos(leaf.pos.x  + this.seed)) * 2);
           break;
         case DISTORTION_OPTIONS.NONE:
           break;

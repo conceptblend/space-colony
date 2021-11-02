@@ -29,7 +29,7 @@ const EXPORT_METHODS = {
     extension: "png"
   },
 };
-const EXPORTMETHOD = EXPORT_METHODS.jpg;
+const EXPORTMETHOD = EXPORT_METHODS.svg;
 /* /EXPORT CONFIGURATION */
 
 /**
@@ -66,8 +66,8 @@ function setup() {
   }
   angleMode( DEGREES );
   
-  bgColor = color(238, 225, 221);
-  fgColor = color(0,0,0); //color(34, 152, 152);
+  bgColor = color(255); //color(238, 225, 221);
+  fgColor = color(0); // color(0,0,0); //color(34, 152, 152);
   
   background(bgColor);
   // Optimization when drawing only the stroke
