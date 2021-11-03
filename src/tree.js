@@ -8,9 +8,10 @@ const DISTORTION_OPTIONS = {
   SINWAVE1: 2,
   SINWAVE2: 3,
   SINWAVE3: 4,
-  WARP: 5
+  WARP: 5,
+  FLOW: 6,
 };
-const distortion = DISTORTION_OPTIONS.WARP; //DISTORTION_OPTIONS.WARP;
+const distortion = DISTORTION_OPTIONS.FLOW; //DISTORTION_OPTIONS.WARP;
 
 const STEERING_OPTIONS = {
   NONE: 0x01,
@@ -102,21 +103,28 @@ function Tree(options) {
       var record = this.maxDist;
       
       // ** DISRUPT THE LEAFS/FOODSOURCE
-      switch ( distortion ) {
-        case DISTORTION_OPTIONS.SINWAVE1:
-          leaf.pos.add(sin(0.5*leaf.pos.y), 0);
-          break;
-        case DISTORTION_OPTIONS.SINWAVE2:
-          leaf.pos.add(sin(2*leaf.pos.y), 0);
-          break;
-        case DISTORTION_OPTIONS.SINWAVE3:
-          leaf.pos.add(2*sin(4*leaf.pos.y), 0);
-          break;
-        case DISTORTION_OPTIONS.WARP:
-          leaf.pos.add(sin(leaf.pos.y + this.seed), (0.5 + 0.5*cos(leaf.pos.x  + this.seed)) * 2);
-          break;
-        case DISTORTION_OPTIONS.NONE:
-          break;
+      if ( USE_DISTORTION ) {
+        switch ( distortion ) {
+          case DISTORTION_OPTIONS.SINWAVE1:
+            leaf.pos.add(sin(0.5*leaf.pos.y), 0);
+            break;
+          case DISTORTION_OPTIONS.SINWAVE2:
+            leaf.pos.add(sin(2*leaf.pos.y), 0);
+            break;
+          case DISTORTION_OPTIONS.SINWAVE3:
+            leaf.pos.add(2*sin(4*leaf.pos.y), 0);
+            break;
+          case DISTORTION_OPTIONS.WARP:
+            leaf.pos.add(sin(leaf.pos.y + this.seed), (0.5 + 0.5*cos(leaf.pos.x  + this.seed)) * 2);
+            break;
+          case DISTORTION_OPTIONS.FLOW:
+            let k = 0.0017;
+            let c = noise( leaf.pos.x * 0.0025 * k, leaf.pos.y * 0.0025 * k, this.seed );
+            leaf.pos.add( 7 * Math.cos( c * 360 ), 7 * Math.sin( c * 360 ) );
+            break;
+          case DISTORTION_OPTIONS.NONE:
+            break;
+        }
       }
       // **/
 

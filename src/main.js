@@ -11,6 +11,8 @@
 let tree;
 
 const SHOWINPROGESS = true;
+
+let USE_DISTORTION = true;
 /**
  * ==== EXPORT CONFIGURATION
  */
@@ -51,7 +53,8 @@ let controlContainer,
     io_steering,
     io_export,
     io_run,
-    io_exportNow;
+    io_exportNow,
+    io_useDistortion;
 
 /* /GLOBALS initialization */
 
@@ -83,6 +86,7 @@ function setup() {
   io_angle = createInput( CONFIG.angle, 'number' );
   io_branchLength = createInput( CONFIG.branchLength, 'number' );
   io_export = createCheckbox( "Export when done", EXPORT );
+  io_useDistortion = createCheckbox( "Use distortion", true );
   io_run = createButton("Run");
   io_run.mouseClicked(e => initDrawing() );
 
@@ -137,9 +141,13 @@ function initDrawing() {
 
 function draw() {
   if ( !isRunning ) return;
+  
+  USE_DISTORTION = io_useDistortion;
 
   if ( iterations-- > 0 && tree.leaves.length > 0 ) {
     tree.grow();
+
+    
 
     // To speed up generation, turn this off
     if ( SHOWINPROGESS ) {
@@ -152,6 +160,34 @@ function draw() {
     background( bgColor );
 
     tree.joinAndShow();
+
+
+    // %%%%%%%%%%%%%%%%%
+
+    // SHOW THE FLOW FIELD
+
+    // let k = 0.0017;
+    // push();
+    // let stepSize = width * 0.025;
+    // for ( let h=0; h<height/stepSize; h++ ) {
+    //   for ( let w=0; w<width/stepSize; w++ ) {
+    //     let c = noise( w * k, h * k );
+        
+    //     stroke("#f00");
+    //     strokeWeight( 2 );
+    //     let ww = w * stepSize + stepSize * 0.5;
+    //     let hh = h * stepSize + stepSize * 0.5;
+    //     line(
+    //       ww,
+    //       hh,
+    //       ww + Math.cos( c*360 ) * 10,
+    //       hh + Math.sin( c*360 ) * 10
+    //     );
+    //   }
+    // }
+    // pop();
+
+    // %%%%%%%%%%%%%%%%%
 
     console.log( `Runtime: ${( t_end - t_start )/1000}s` );
     if ( io_export?.checked() ?? EXPORT ) {
