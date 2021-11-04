@@ -30,6 +30,59 @@ const defaultOptions = {
   steering: STEERING_OPTIONS.LEFT_ROUNDING,
 }
 
+function FluidDistortion( options ) {
+  this.directions = [];
+  this.magnitudes = [];
+  this.cols = options?.cols ?? 20;
+  this.rows = options?.rows ?? this.cols;
+  this.k = options?.k ?? 0.0017;
+
+  this.setup = function() {
+    let zOff1 = Math.random() * Math.pow(2, 16);
+    let zOff2 = Math.random() * Math.pow(2, 16) + Math.pow(2, 16);
+
+    for( let y = 0; y < this.rows; y++ ) {
+      for( let x = 0; x < this.cols; x++ ) {
+        let i = x + y * this.cols,
+            xk = x * this.k,
+            yk = y * this.k;
+        this.directions[ i ] = noise( xk, yk, zOff1 );
+        this.magnitudes[ i ] = noise( xk * 10, yk * 10, zOff2 );
+      }
+    }
+  }
+
+  this.getDirection = function( x, y ) {
+    // Throw an error if the coords are out of range
+    //if ( x < 0 || x >= this.cols || y < 0 || y >= this.rows ) throw new Error(`FluidDistortion.getDirection( ${x}, ${y} ) coordinates out of range.`)
+
+    // Clamp it instead
+    x = Math.max( Math.min( x, this.cols ), 0 );
+    y = Math.max( Math.min( y, this.rows ), 0 );
+
+    return this.directions[ x + y * this.cols ];
+  };
+  this.getDirectionFromNormalized = function( x, y ) {
+      return this.getDirection( Math.floor( x * this.cols), Math.floor( y * this.rows ));
+  }
+
+  this.getMagnitude = function( x, y ) {
+    // Throw an error if the coords are out of range
+    // if ( x < 0 || x >= this.cols || y < 0 || y >= this.rows ) throw new Error(`FluidDistortion.getMagnitude( ${x}, ${y} ) coordinates out of range.`)
+    // Clamp it instead
+    x = Math.max( Math.min( x, this.cols ), 0 );
+    y = Math.max( Math.min( y, this.rows ), 0 );
+
+    return this.magnitudes[ x + y * this.cols ];
+  }
+  this.getMagnitudeFromNormalized = function( x, y ) {
+    return this.getMagnitude( Math.floor( x * this.cols), Math.floor( y * this.rows ));
+  }
+
+
+  this.setup();
+}
+
 function Tree(options) {
   this.angle = options?.angle ?? defaultOptions.angle;
   this.branchLength = options?.branchLength ?? defaultOptions.branchLength;
@@ -40,6 +93,10 @@ function Tree(options) {
   this.width = options?.width ?? defaultOptions.width;
   this.steering = options?.steering ?? defaultOptions.steering;
   this.seed = Math.random() * 512;
+  this.fluidDistortion = new FluidDistortion({
+    cols: 40,
+    rows: 40,
+  });
 
   const MAXDIST_3 = this.maxDist * 3.0;
   const MAXDIST_3over2 = MAXDIST_3 * 0.5;
@@ -96,6 +153,10 @@ function Tree(options) {
     }
   }
 
+  // Set up the look up tables for the flow fields
+  this.flowDirection = [];
+  this.flowMagnitude = [];
+
   this.grow = function() {
 
     this.leaves.forEach(leaf => {
@@ -118,9 +179,13 @@ function Tree(options) {
             leaf.pos.add(sin(leaf.pos.y + this.seed), (0.5 + 0.5*cos(leaf.pos.x  + this.seed)) * 2);
             break;
           case DISTORTION_OPTIONS.FLOW:
-            let k = 0.0017;
-            let c = noise( leaf.pos.x * 0.0025 * k, leaf.pos.y * 0.0025 * k, this.seed );
-            leaf.pos.add( 7 * Math.cos( c * 360 ), 7 * Math.sin( c * 360 ) );
+            // let k = 0.0017;
+            // let c = noise( leaf.pos.x * 0.0025 * k, leaf.pos.y * 0.0025 * k, this.seed );
+            let xw = leaf.pos.x / width,
+                yh = leaf.pos.y / height;
+            let dir = this.fluidDistortion.getDirectionFromNormalized( xw, yh ) * 360;
+            let mag = this.fluidDistortion.getMagnitudeFromNormalized( xw, yh ) * 10;
+            leaf.pos.add( mag * Math.cos( dir ), mag * Math.sin( dir ) ); // mag was 7
             break;
           case DISTORTION_OPTIONS.NONE:
             break;

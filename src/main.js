@@ -12,6 +12,7 @@ let tree;
 
 const SHOWINPROGESS = true;
 
+let DRAW_FLOWFIELD = true;
 let USE_DISTORTION = true;
 /**
  * ==== EXPORT CONFIGURATION
@@ -31,7 +32,7 @@ const EXPORT_METHODS = {
     extension: "png"
   },
 };
-const EXPORTMETHOD = EXPORT_METHODS.svg;
+const EXPORTMETHOD = EXPORT_METHODS.jpg;
 /* /EXPORT CONFIGURATION */
 
 /**
@@ -87,6 +88,7 @@ function setup() {
   io_branchLength = createInput( CONFIG.branchLength, 'number' );
   io_export = createCheckbox( "Export when done", EXPORT );
   io_useDistortion = createCheckbox( "Use distortion", true );
+  io_showFlowField = createCheckbox( "Show flow field", true );
   io_run = createButton("Run");
   io_run.mouseClicked(e => initDrawing() );
 
@@ -106,6 +108,8 @@ function setup() {
   controlContainer.child( io_run );
   controlContainer.child( io_exportNow );
   controlContainer.child( io_export );
+  controlContainer.child( io_showFlowField );
+  controlContainer.child( io_useDistortion );
   
   // initDrawing();
   noLoop();
@@ -142,12 +146,11 @@ function initDrawing() {
 function draw() {
   if ( !isRunning ) return;
   
-  USE_DISTORTION = io_useDistortion;
+  USE_DISTORTION = io_useDistortion.checked();
+  DRAW_FLOWFIELD = io_showFlowField.checked();
 
   if ( iterations-- > 0 && tree.leaves.length > 0 ) {
     tree.grow();
-
-    
 
     // To speed up generation, turn this off
     if ( SHOWINPROGESS ) {
@@ -159,35 +162,39 @@ function draw() {
     t_end = Date.now();
     background( bgColor );
 
+    // %%%%%%%%%%%%%%%%%
+    // SHOW THE FLOW FIELD
+    if ( DRAW_FLOWFIELD ) {
+      push();
+      let stepSizeX = width / tree.fluidDistortion.cols;
+      let stepSizeY = height / tree.fluidDistortion.rows;
+
+      for ( let h=0, hlen = tree.fluidDistortion.rows; h<hlen; h++ ) {
+        for ( let w=0, wlen = tree.fluidDistortion.cols; w<wlen; w++ ) {
+          let dir = tree.fluidDistortion.getDirection( w, h );
+          let mag = tree.fluidDistortion.getMagnitude( w, h );
+          
+          stroke("#eee");
+          strokeWeight( 2 );
+          let ww = w * stepSizeX + stepSizeX * 0.5;
+          let hh = h * stepSizeY + stepSizeY * 0.5;
+
+          ellipse( ww, hh, 3, 3 );
+          line(
+            ww,
+            hh,
+            ww + Math.cos( dir*360 ) * (mag * 40),
+            hh + Math.sin( dir*360 ) * (mag * 40)
+          );
+        }
+      }
+      pop();
+    }
+    // %%%%%%%%%%%%%%%%%
+
+
     tree.joinAndShow();
 
-
-    // %%%%%%%%%%%%%%%%%
-
-    // SHOW THE FLOW FIELD
-
-    // let k = 0.0017;
-    // push();
-    // let stepSize = width * 0.025;
-    // for ( let h=0; h<height/stepSize; h++ ) {
-    //   for ( let w=0; w<width/stepSize; w++ ) {
-    //     let c = noise( w * k, h * k );
-        
-    //     stroke("#f00");
-    //     strokeWeight( 2 );
-    //     let ww = w * stepSize + stepSize * 0.5;
-    //     let hh = h * stepSize + stepSize * 0.5;
-    //     line(
-    //       ww,
-    //       hh,
-    //       ww + Math.cos( c*360 ) * 10,
-    //       hh + Math.sin( c*360 ) * 10
-    //     );
-    //   }
-    // }
-    // pop();
-
-    // %%%%%%%%%%%%%%%%%
 
     console.log( `Runtime: ${( t_end - t_start )/1000}s` );
     if ( io_export?.checked() ?? EXPORT ) {
