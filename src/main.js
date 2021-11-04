@@ -32,7 +32,7 @@ const EXPORT_METHODS = {
     extension: "png"
   },
 };
-const EXPORTMETHOD = EXPORT_METHODS.jpg;
+const EXPORTMETHOD = EXPORT_METHODS.svg;
 /* /EXPORT CONFIGURATION */
 
 /**

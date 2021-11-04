@@ -113,6 +113,17 @@ const presets = {
     canvasSize: 1080, /*540 * 2*/
     steering: /* src: tree.js */STEERING_OPTIONS.NONE,
   },
+  flowfieldPlay: {
+    description: "flow-field-play",
+    lifespan: 128,
+    maxDist: 24,
+    minDist: 8,
+    branchLength: 2,
+    attractors: 25000,
+    angle: 45,
+    canvasSize: 1080, /*540 * 2*/
+    steering: /* src: tree.js */STEERING_OPTIONS.NONE,
+  },
 };
 
-const CONFIG = presets.flowfield2;
+const CONFIG = presets.flowfieldPlay;
