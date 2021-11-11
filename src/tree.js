@@ -364,33 +364,30 @@ function Tree(options) {
       if (p === null) return;
       
       let s = {};
-      
-      if (branch.pos.x <= p.pos.x) {
+      if ( nearEqual( branch.pos.x, p.pos.x ) ) {
+        s = {
+          x1: branch.pos.x,
+          y1: Math.min( branch.pos.y, p.pos.y ),
+          x2: p.pos.x,
+          y2: Math.max( branch.pos.y, p.pos.y ),
+          c: [255,0,0, 64], // FOR DEBUGGING
+        };
+      } else if ( nearEqual( branch.pos.y, p.pos.y ) ) {
+        s = {
+          x1: Math.min( branch.pos.x, p.pos.x ),
+          y1: branch.pos.y,
+          x2: Math.max( branch.pos.x, p.pos.x ),
+          y2: p.pos.y,
+          c: [0,0,255, 64], // FOR DEBUGGING
+        };
+      } else {
         s = {
           x1: branch.pos.x,
           y1: branch.pos.y,
           x2: p.pos.x,
           y2: p.pos.y,
-          c: [0,0,255, 64], // FOR DEBUGGING
+          c: [0,0,0, 64], // FOR DEBUGGING
         };
-      } else {
-        if (branch.pos.y < p.pos.y) {
-          s = {
-            x1: branch.pos.x,
-            y1: branch.pos.y,
-            x2: p.pos.x,
-            y2: p.pos.y,
-            c: [0,255,0, 64], // FOR DEBUGGING
-          };
-        } else {
-          s = {
-            x1: p.pos.x,
-            y1: p.pos.y,
-            x2: branch.pos.x,
-            y2: branch.pos.y,
-            c: [255,0,0, 64], // FOR DEBUGGING
-          };
-        }
       }
       s.slope = (s.y2 - s.y1) / (s.x2 - s.x1);
       segments.push( s );
@@ -413,7 +410,7 @@ function Tree(options) {
       
       // Find same slope
       let matches = segments_optimized.filter(opti => {
-        let o_slope = ( opti.y2 - opti.y1 ) / ( opti.x2 - opti.x1 ) ; 
+        let o_slope = ( opti.y2 - opti.y1 ) / ( opti.x2 - opti.x1 ) ;
         // Use `nearEqual` because floating point rounding does some awkward shit :/
         return nearEqual( raw.slope, o_slope );
       });
@@ -423,25 +420,27 @@ function Tree(options) {
       if ( matches.length === 0 ) {
         segments_optimized.push( raw );
       } else {
+        /**
+         * Now compare against all of the segments matched with the same slope.
+         * Depending on which end-points are touching, extend the ?? matched segment ??.
+         * For some reason, this isn't working on vertical lines.
+         */
         let found = false;
         matches.forEach(m => {
           if ( found ) return;
-          // if ( raw.x1 === m.x2 && raw.y1 === m.y2 ) {
-          if ( nearEqual( raw.x1, m.x2 ) && nearEqual( raw.y1, m.y2) ) {
+          
+          if ( nearEqual( raw.x1, m.x2 ) && nearEqual( raw.y1, m.y2 ) ) { // if ( raw.x1 === m.x2 && raw.y1 === m.y2 ) {
             // Extend the optimized segment "BEFORE"
             m.x2 = raw.x2;
             m.y2 = raw.y2;
             found = true;
             // console.log("Extending BEFORE");
-          } else {
-            // if ( raw.x2 === m.x1 && raw.y2 === m.y1 ) {
-            if ( nearEqual( raw.x2, m.x1 ) && nearEqual( raw.y2, m.y1 ) ) {
-              // Extend the optimized segment "AFTER"
-              m.x1 = raw.x1;
-              m.y1 = raw.y1;
-              found = true;
-              // console.log("Extending AFTER");
-            }
+          } else if ( nearEqual( raw.x2, m.x1 ) && nearEqual( raw.y2, m.y1 ) ) { // if ( raw.x2 === m.x1 && raw.y2 === m.y1 ) {
+            // Extend the optimized segment "AFTER"
+            m.x1 = raw.x1;
+            m.y1 = raw.y1;
+            found = true;
+            // console.log("Extending AFTER");
           }
         });
         if ( !found ) {
@@ -475,10 +474,9 @@ function Tree(options) {
  * return FALSE otherwise
  **/
 function nearEqual( a, b, deltaOverride ) {
+  if (a === Infinity && b === Infinity ) return true;
   const delta = deltaOverride ?? 0.05; // 0r 0.025?
   return Math.abs(b - a) < delta;
 }
-
-
 
 
