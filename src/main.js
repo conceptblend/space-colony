@@ -12,7 +12,7 @@ let tree;
 
 const SHOWINPROGESS = true;
 
-let DRAW_FLOWFIELD = true;
+let DRAW_FLOWFIELD = !true;
 let USE_DISTORTION = true;
 /**
  * ==== EXPORT CONFIGURATION
@@ -32,7 +32,7 @@ const EXPORT_METHODS = {
     extension: "png"
   },
 };
-const EXPORTMETHOD = EXPORT_METHODS.svg;
+const EXPORTMETHOD = EXPORT_METHODS.jpg;
 /* /EXPORT CONFIGURATION */
 
 /**
@@ -70,8 +70,8 @@ function setup() {
   }
   angleMode( DEGREES );
   
-  bgColor = color(255); //color(238, 225, 221);
-  fgColor = color(0); // color(0,0,0); //color(34, 152, 152);
+  bgColor = color("#00152B");//color(255); //color(238, 225, 221);
+  fgColor = color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
   
   background(bgColor);
   // Optimization when drawing only the stroke
@@ -87,8 +87,8 @@ function setup() {
   io_angle = createInput( CONFIG.angle, 'number' );
   io_branchLength = createInput( CONFIG.branchLength, 'number' );
   io_export = createCheckbox( "Export when done", EXPORT );
-  io_useDistortion = createCheckbox( "Use distortion", true );
-  io_showFlowField = createCheckbox( "Show flow field", true );
+  io_useDistortion = createCheckbox( "Use distortion", USE_DISTORTION );
+  io_showFlowField = createCheckbox( "Show flow field", DRAW_FLOWFIELD );
   io_run = createButton("Run");
   io_run.mouseClicked(e => initDrawing() );
 

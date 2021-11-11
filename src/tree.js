@@ -92,7 +92,7 @@ function Tree(options) {
   this.minDist = options?.minDist ?? defaultOptions.minDist;
   this.width = options?.width ?? defaultOptions.width;
   this.steering = options?.steering ?? defaultOptions.steering;
-  this.seed = Math.random() * 512;
+  this.seed = options?.seed ?? Math.random() * 512;
   this.fluidDistortion = new FluidDistortion({
     cols: 40,
     rows: 40,
@@ -129,7 +129,7 @@ function Tree(options) {
   }
 
   // Set up the trunk/root
-  var pos = createVector(this.width * 0.5, this.height * 0.5);
+  var pos = createVector(this.width * 0.25, this.height * 0.25);
   var dir = createVector(0, 1.0);
   var root = new Branch(null, pos, dir, this.branchLength);
 
@@ -179,13 +179,11 @@ function Tree(options) {
             leaf.pos.add(sin(leaf.pos.y + this.seed), (0.5 + 0.5*cos(leaf.pos.x  + this.seed)) * 2);
             break;
           case DISTORTION_OPTIONS.FLOW:
-            // let k = 0.0017;
-            // let c = noise( leaf.pos.x * 0.0025 * k, leaf.pos.y * 0.0025 * k, this.seed );
             let xw = leaf.pos.x / width,
                 yh = leaf.pos.y / height;
             let dir = this.fluidDistortion.getDirectionFromNormalized( xw, yh ) * 360;
             let mag = this.fluidDistortion.getMagnitudeFromNormalized( xw, yh ) * 10;
-            leaf.pos.add( mag * Math.cos( dir ), mag * Math.sin( dir ) ); // mag was 7
+            leaf.pos.add( mag * Math.cos( dir ), mag * Math.sin( dir ) );
             break;
           case DISTORTION_OPTIONS.NONE:
             break;
@@ -318,6 +316,9 @@ function Tree(options) {
     } while ( lastSegmentCount !== segments.length && passCount < MAX_PASSES);
 
     segments.forEach(s => {
+
+      // stroke( getColourEffect( s ) );
+
       DEBUG && stroke( s.c );
       // TODO: Find a way to call the stored `branch.show` method instead of
       // manually recreating it.
@@ -480,3 +481,9 @@ function nearEqual( a, b, deltaOverride ) {
 }
 
 
+function getColourEffect( _s, _method ) {
+  return [0,0,0];
+  // let c = "#CC6256";
+  // if ( _s.x1 < _s.x2 ) c = "#3B78DB";
+  // return c;
+ }
