@@ -153,10 +153,6 @@ function Tree(options) {
     }
   }
 
-  // Set up the look up tables for the flow fields
-  this.flowDirection = [];
-  this.flowMagnitude = [];
-
   this.grow = function() {
 
     this.leaves.forEach(leaf => {
