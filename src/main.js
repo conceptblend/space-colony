@@ -77,7 +77,7 @@ function setup() {
   // Optimization when drawing only the stroke
   noFill();
   stroke( fgColor );
-  strokeWeight( 4 );
+  strokeWeight( 4 ); // 16
   // End optimization
   /* /ENVIRONMENT init */
 
