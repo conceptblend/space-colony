@@ -135,8 +135,8 @@ const presets = {
     canvasSize: 1080, /*540 * 2*/
     steering: /* src: tree.js */STEERING_OPTIONS.ROUNDING,
   },
-  test: {
-    description: "test",
+  test2: {
+    description: "test2",
     lifespan: 64,
     maxDist: 24,
     minDist: 8,
@@ -146,6 +146,17 @@ const presets = {
     canvasSize: 540, /*540 * 2*/
     steering: /* src: tree.js */STEERING_OPTIONS.ROUNDING,
   },
+  test: {
+    description: "test",
+    lifespan: 128,
+    maxDist: 32,
+    minDist: 12,
+    branchLength: 2,
+    attractors: 5000,//25000,
+    angle: 25,
+    canvasSize: 1080, /*540 * 2*/
+    steering: /* src: tree.js */STEERING_OPTIONS.LEFT_ROUNDING,
+  },
 };
 
-const CONFIG = presets.flowfieldPlay2;
+const CONFIG = presets.test;
