@@ -83,6 +83,20 @@ function FluidDistortion( options ) {
   this.setup();
 }
 
+function Segment( _head, _tail, _colour ) {
+  this.head = _head;
+  this.tail = _tail;
+  this.c = _colour ?? [0,0,0];
+
+  this.x1 = () => this.head.pos.x;
+  this.x2 = () => this.tail.pos.x;
+  this.y1 = () => this.head.pos.y;
+  this.y2 = () => this.tail.pos.y;
+
+  this.slope = (this.y2() - this.y1()) / (this.x2() - this.x1());
+ 
+}
+
 function Tree(options) {
   this.angle = options?.angle ?? defaultOptions.angle;
   this.branchLength = options?.branchLength ?? defaultOptions.branchLength;
@@ -318,7 +332,7 @@ function Tree(options) {
       DEBUG && stroke( s.c );
       // TODO: Find a way to call the stored `branch.show` method instead of
       // manually recreating it.
-      line(s.x1, s.y1, s.x2, s.y2);
+      line(s.x1(), s.y1(), s.x2(), s.y2());
     });
     
   }
@@ -360,33 +374,22 @@ function Tree(options) {
       let p = branch.parent;
       if (p === null) return;
       
-      let s = {};
+      let s;
       if ( nearEqual( branch.pos.x, p.pos.x ) ) {
-        s = {
-          x1: branch.pos.x,
-          y1: Math.min( branch.pos.y, p.pos.y ),
-          x2: p.pos.x,
-          y2: Math.max( branch.pos.y, p.pos.y ),
-          c: [255,0,0, 64], // FOR DEBUGGING
-        };
+        if ( branch.pos.y < p.pos.y ) {
+          s = new Segment( branch, p, [255,0,0, 64] /* FOR DEBUGGING */ );
+        } else {
+          s = new Segment( p, branch, [255,0,0, 64] /* FOR DEBUGGING */ );
+        }
       } else if ( nearEqual( branch.pos.y, p.pos.y ) ) {
-        s = {
-          x1: Math.min( branch.pos.x, p.pos.x ),
-          y1: branch.pos.y,
-          x2: Math.max( branch.pos.x, p.pos.x ),
-          y2: p.pos.y,
-          c: [0,0,255, 64], // FOR DEBUGGING
-        };
+        if ( branch.pos.x < p.pos.x ) {
+          s = new Segment( branch, p, [0,0,0, 64] /* FOR DEBUGGING */ );
+        } else {
+          s = new Segment( p, branch, [0,0,0, 64] /* FOR DEBUGGING */ );
+        }
       } else {
-        s = {
-          x1: branch.pos.x,
-          y1: branch.pos.y,
-          x2: p.pos.x,
-          y2: p.pos.y,
-          c: [0,0,0, 64], // FOR DEBUGGING
-        };
+        s = new Segment( branch, p, [0,0,255, 64] /* FOR DEBUGGING */ );
       }
-      s.slope = (s.y2 - s.y1) / (s.x2 - s.x1);
       segments.push( s );
     });
     return segments;
@@ -407,9 +410,8 @@ function Tree(options) {
       
       // Find same slope
       let matches = segments_optimized.filter(opti => {
-        let o_slope = ( opti.y2 - opti.y1 ) / ( opti.x2 - opti.x1 ) ;
         // Use `nearEqual` because floating point rounding does some awkward shit :/
-        return nearEqual( raw.slope, o_slope );
+        return nearEqual( raw.slope, opti.slope );
       });
       
       // console.log("Matches: ", matches.length);
@@ -426,27 +428,27 @@ function Tree(options) {
         matches.forEach(m => {
           if ( found ) return;
           
-          if ( nearEqual( raw.x1, m.x2 ) && nearEqual( raw.y1, m.y2 ) ) { // if ( raw.x1 === m.x2 && raw.y1 === m.y2 ) {
+          if ( nearEqual( raw.x1(), m.x2() ) && nearEqual( raw.y1(), m.y2() ) ) {
             // Extend the optimized segment "BEFORE"
-            m.x2 = raw.x2;
-            m.y2 = raw.y2;
+            m.tail = raw.tail;
             found = true;
-            // console.log("Extending BEFORE");
-          } else if ( nearEqual( raw.x2, m.x1 ) && nearEqual( raw.y2, m.y1 ) ) { // if ( raw.x2 === m.x1 && raw.y2 === m.y1 ) {
+          } else if ( nearEqual( raw.x2(), m.x1() ) && nearEqual( raw.y2(), m.y1() ) ) {
             // Extend the optimized segment "AFTER"
-            m.x1 = raw.x1;
-            m.y1 = raw.y1;
+            m.head = raw.head;
             found = true;
-            // console.log("Extending AFTER");
           }
         });
         if ( !found ) {
           // NO MATCH so we need to move it in
           segments_optimized.push( raw );
-          // console.log("NO MATCH")
         }
       }
     });
+
+    // End joining of slope friends
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    // Begin linking and optimization of branches
+    // TODO
 
     return segments_optimized;
   }
