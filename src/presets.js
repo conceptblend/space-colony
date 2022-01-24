@@ -154,7 +154,7 @@ const presets = {
     branchLength: 2,
     attractors: 5000,//25000,
     angle: 25,
-    canvasSize: 1080, /*540 * 2*/
+    canvasSize: 540, /*540 * 2*/
     steering: /* src: tree.js */STEERING_OPTIONS.LEFT_ROUNDING,
   },
 };

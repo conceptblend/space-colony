@@ -325,16 +325,16 @@ function Tree(options) {
       /*DEBUG && */ console.log(`Simplifed segments (Pass ${passCount}): ${segments.length}`);
     } while ( lastSegmentCount !== segments.length && passCount < MAX_PASSES);
 
+    beginShape();
     segments.forEach(s => {
-
-      // stroke( getColourEffect( s ) );
-
       DEBUG && stroke( s.c );
       // TODO: Find a way to call the stored `branch.show` method instead of
       // manually recreating it.
-      line(s.x1(), s.y1(), s.x2(), s.y2());
+      // line( s.x1(), s.y1(), s.x2(), s.y2() );
+      curveVertex( s.x1(), s.y1() );
     });
-    
+    // curveVertex( s.x2(), s.y2() );
+    endShape();
   }
   
   this._dedupe = function(t) {
@@ -477,11 +477,3 @@ function nearEqual( a, b, deltaOverride ) {
   const delta = deltaOverride ?? 0.05; // 0r 0.025?
   return Math.abs(b - a) < delta;
 }
-
-
-function getColourEffect( _s, _method ) {
-  return [0,0,0];
-  // let c = "#CC6256";
-  // if ( _s.x1 < _s.x2 ) c = "#3B78DB";
-  // return c;
- }

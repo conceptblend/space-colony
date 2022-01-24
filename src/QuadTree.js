@@ -185,15 +185,9 @@ class QuadTree {
     noFill();
     stroke(255);
     strokeWeight(1);
-    // noStroke();
+
     let c = quadIndex || 0;
 
-    // if (this.divided === false && this.nodes.length > 0) {
-    //   fill(this.nodes.length * 48, c * 48, c * 48);
-    //   // noStroke();
-    // } else {
-    //   noFill();
-    // }
     rect(this.region.x, this.region.y, this.region.w, this.region.h);
 
     this.nodes.forEach(p => circle(p.pos.x, p.pos.y, 2));
@@ -203,5 +197,4 @@ class QuadTree {
     if (this.subregions.sw !== null) this.subregions.sw.show(2);
     if (this.subregions.se !== null) this.subregions.se.show(3);
   }
-
 }
