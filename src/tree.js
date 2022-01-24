@@ -325,16 +325,12 @@ function Tree(options) {
       /*DEBUG && */ console.log(`Simplifed segments (Pass ${passCount}): ${segments.length}`);
     } while ( lastSegmentCount !== segments.length && passCount < MAX_PASSES);
 
-    beginShape();
     segments.forEach(s => {
       DEBUG && stroke( s.c );
       // TODO: Find a way to call the stored `branch.show` method instead of
       // manually recreating it.
-      // line( s.x1(), s.y1(), s.x2(), s.y2() );
-      curveVertex( s.x1(), s.y1() );
+      line( s.x1(), s.y1(), s.x2(), s.y2() );
     });
-    // curveVertex( s.x2(), s.y2() );
-    endShape();
   }
   
   this._dedupe = function(t) {
