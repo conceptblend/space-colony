@@ -149,14 +149,25 @@ const presets = {
   test: {
     description: "test",
     lifespan: 128,
-    maxDist: 32,
-    minDist: 12,
+    maxDist: 16,
+    minDist: 3,
     branchLength: 2,
     attractors: 5000,//25000,
     angle: 25,
-    canvasSize: 540, /*540 * 2*/
+    canvasSize: 540*2, /*540 * 2*/
     steering: /* src: tree.js */STEERING_OPTIONS.LEFT_ROUNDING,
+  },
+  test2: {
+    description: "test",
+    lifespan: 128,
+    maxDist: 16,
+    minDist: 3,
+    branchLength: 4,
+    attractors: 5000,//25000,
+    angle: 25,
+    canvasSize: 540*2, /*540 * 2*/
+    steering: /* src: tree.js */STEERING_OPTIONS.NONE,
   },
 };
 
-const CONFIG = presets.test;
+const CONFIG = presets.test2;

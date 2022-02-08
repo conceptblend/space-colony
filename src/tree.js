@@ -97,7 +97,7 @@ function Segment( _head, _tail, _colour ) {
  
 }
 
-function Tree(options) {
+function Tree( options ) {
   this.angle = options?.angle ?? defaultOptions.angle;
   this.branchLength = options?.branchLength ?? defaultOptions.branchLength;
   this.height = options?.height ?? defaultOptions.height;
@@ -110,6 +110,7 @@ function Tree(options) {
   this.fluidDistortion = new FluidDistortion({
     cols: 40,
     rows: 40,
+    k: 0.00085,
   });
 
   const MAXDIST_3 = this.maxDist * 3.0;
@@ -143,7 +144,7 @@ function Tree(options) {
   }
 
   // Set up the trunk/root
-  var pos = createVector(this.width * 0.25, this.height * 0.25);
+  var pos = createVector(offset + Math.floor(Math.random()*nw), offset + Math.floor(Math.random()*nh) );
   var dir = createVector(0, 1.0);
   var root = new Branch(null, pos, dir, this.branchLength);
 

@@ -69,15 +69,29 @@ function setup() {
     createCanvas( CONFIG.canvasSize, CONFIG.canvasSize ); // Good for testing or for digital outputs
   }
   angleMode( DEGREES );
+
+  const colorWay = [
+    "#4a6670ff",
+    "#565c76ff",
+    "#6d6498ff",
+    "#707398ff",
+    "#78a493ff",
+    "#7ea791ff",
+    "#989570ff",
+    "#987073ff",
+    "#739870ff"
+  ];
+
+  const getColorWay = () => colorWay[ Math.floor( Math.random() * colorWay.length ) ];
   
-  bgColor = color("#00152B");//color(255); //color(238, 225, 221);
-  fgColor = color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
+  bgColor = color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
+  fgColor = color( getColorWay() );; //color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
   
   background(bgColor);
   // Optimization when drawing only the stroke
   noFill();
   stroke( fgColor );
-  strokeWeight( 4 ); // 16
+  strokeWeight( 2 ); // 16
   // End optimization
   /* /ENVIRONMENT init */
 
@@ -175,7 +189,7 @@ function draw() {
           let mag = tree.fluidDistortion.getMagnitude( w, h );
           
           stroke("#eee");
-          strokeWeight( 2 );
+          strokeWeight( 1 );
           let ww = w * stepSizeX + stepSizeX * 0.5;
           let hh = h * stepSizeY + stepSizeY * 0.5;
 
@@ -183,8 +197,8 @@ function draw() {
           line(
             ww,
             hh,
-            ww + Math.cos( dir*360 ) * (mag * 40),
-            hh + Math.sin( dir*360 ) * (mag * 40)
+            ww + Math.cos( dir*360 ) * (mag * 20),
+            hh + Math.sin( dir*360 ) * (mag * 20)
           );
         }
       }
