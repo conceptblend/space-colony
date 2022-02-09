@@ -65,8 +65,8 @@ class Tree {
       // if (sdfContainer > 0 && sdfBite > 0) {
       if ( sdfContainer > 0 ) {
         this.leaves.push(new Leaf(
-          weight, // weight
-          createVector(offset + x, offset + y)
+          createVector(offset + x, offset + y),
+          weight // weight
         ));
       }
     }
@@ -152,7 +152,6 @@ class Tree {
         }
       });
 
-      
       if (closestBranch != null) {
         var newDir = p5.Vector.sub(leaf.pos, closestBranch.pos);
         closestBranch.dir.add(newDir.mult(leaf.weight).normalize());
