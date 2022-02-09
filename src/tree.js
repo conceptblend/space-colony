@@ -30,14 +30,18 @@ const defaultOptions = {
   steering: STEERING_OPTIONS.LEFT_ROUNDING,
 }
 
-function FluidDistortion( options ) {
-  this.directions = [];
-  this.magnitudes = [];
-  this.cols = options?.cols ?? 20;
-  this.rows = options?.rows ?? this.cols;
-  this.k = options?.k ?? 0.0017;
+class FluidDistortion {
+  constructor( options ) {
+    this.directions = [];
+    this.magnitudes = [];
+    this.cols = options?.cols ?? 20;
+    this.rows = options?.rows ?? this.cols;
+    this.k = options?.k ?? 0.0017;
 
-  this.setup = function() {
+    this.setup();
+  }
+
+  setup() {
     let zOff1 = Math.random() * Math.pow(2, 16);
     let zOff2 = Math.random() * Math.pow(2, 16) + Math.pow(2, 16);
 
@@ -52,7 +56,7 @@ function FluidDistortion( options ) {
     }
   }
 
-  this.getDirection = function( x, y ) {
+  getDirection( x, y ) {
     // Throw an error if the coords are out of range
     //if ( x < 0 || x >= this.cols || y < 0 || y >= this.rows ) throw new Error(`FluidDistortion.getDirection( ${x}, ${y} ) coordinates out of range.`)
 
@@ -62,11 +66,11 @@ function FluidDistortion( options ) {
 
     return this.directions[ x + y * this.cols ];
   };
-  this.getDirectionFromNormalized = function( x, y ) {
+  getDirectionFromNormalized( x, y ) {
       return this.getDirection( Math.floor( x * this.cols), Math.floor( y * this.rows ));
   }
 
-  this.getMagnitude = function( x, y ) {
+  getMagnitude( x, y ) {
     // Throw an error if the coords are out of range
     // if ( x < 0 || x >= this.cols || y < 0 || y >= this.rows ) throw new Error(`FluidDistortion.getMagnitude( ${x}, ${y} ) coordinates out of range.`)
     // Clamp it instead
@@ -75,12 +79,9 @@ function FluidDistortion( options ) {
 
     return this.magnitudes[ x + y * this.cols ];
   }
-  this.getMagnitudeFromNormalized = function( x, y ) {
+  getMagnitudeFromNormalized( x, y ) {
     return this.getMagnitude( Math.floor( x * this.cols), Math.floor( y * this.rows ));
   }
-
-
-  this.setup();
 }
 
 function Segment( _head, _tail, _colour ) {
@@ -124,6 +125,7 @@ function Tree( options ) {
   let offset = this.width / 10;
   let nw = this.width - 2 * offset;
   let nh = this.height - 2 * offset;
+
 
   for (var i = 0, len = this.numLeaves; i < len; i++) {
     weight = Math.ceil(Math.random() * 10);
