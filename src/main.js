@@ -110,10 +110,10 @@ function setup() {
   io_exportNow.mouseClicked( e => saveImage() );
 
   io_steering = createSelect();
-  io_steering.option( "No steering", STEERING_OPTIONS.NONE );
-  io_steering.option( "Rounded", STEERING_OPTIONS.ROUNDING );
-  io_steering.option( "Left-rounded", STEERING_OPTIONS.LEFT_ROUNDING );
-  io_steering.option( "Right-rounded", STEERING_OPTIONS.RIGHT_ROUNDING );
+  io_steering.option( "No steering", Tree.steeringOptions.NONE );
+  io_steering.option( "Rounded", Tree.steeringOptions.ROUNDING );
+  io_steering.option( "Left-rounded", Tree.steeringOptions.LEFT_ROUNDING );
+  io_steering.option( "Right-rounded", Tree.steeringOptions.RIGHT_ROUNDING );
   io_steering.selected( CONFIG.steering );
   
   controlContainer.child( io_angle );

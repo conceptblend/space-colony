@@ -45,7 +45,7 @@ const presets = {
     attractors: 25000,
     angle: 90,
     canvasSize: 600, /*540 * 2*/
-    steering: /* src: tree.js */STEERING_OPTIONS.RIGHT_ROUNDING,
+    steering: /* src: tree.js */Tree.steeringOptions.RIGHT_ROUNDING,
   },
   processingCommunity: {
     description: "Balanced parameters to get the rich, tightly packed output we want!",
@@ -56,7 +56,7 @@ const presets = {
     attractors: 25000,
     angle: 120,
     canvasSize: 1080, /*540 * 2*/
-    steering: /* src: tree.js */STEERING_OPTIONS.LEFT_ROUNDING,
+    steering: /* src: tree.js */Tree.steeringOptions.LEFT_ROUNDING,
   },
   processingCommunity2: {
     description: "Balanced parameters to get the rich, tightly packed output we want! But a little wonkier.",
@@ -67,7 +67,7 @@ const presets = {
     attractors: 25000,
     angle: 120,
     canvasSize: 1080, /*540 * 2*/
-    steering: /* src: tree.js */STEERING_OPTIONS.LEFT_ROUNDING,
+    steering: /* src: tree.js */Tree.steeringOptions.LEFT_ROUNDING,
   },
   processingCommunity3: {
     description: "Use for hte circles at 90. Balanced parameters to get the rich, tightly packed output we want! But a little wonkier.",
@@ -78,7 +78,7 @@ const presets = {
     attractors: 25000,
     angle: 90,
     canvasSize: 600, /*540 * 2*/
-    steering: /* src: tree.js */STEERING_OPTIONS.LEFT_ROUNDING,
+    steering: /* src: tree.js */Tree.steeringOptions.LEFT_ROUNDING,
   },
   funfunfun: {
     description: "harumph",
@@ -89,7 +89,7 @@ const presets = {
     attractors: 25000,
     angle: 60,
     canvasSize: 1080, /*540 * 2*/
-    steering: /* src: tree.js */STEERING_OPTIONS.LEFT_ROUNDING,
+    steering: /* src: tree.js */Tree.steeringOptions.LEFT_ROUNDING,
   },
   flowfield: {
     description: "flow-field",
@@ -100,7 +100,7 @@ const presets = {
     attractors: 25000,
     angle: 60,
     canvasSize: 1080, /*540 * 2*/
-    steering: /* src: tree.js */STEERING_OPTIONS.NONE,
+    steering: /* src: tree.js */Tree.steeringOptions.NONE,
   },
   flowfield2: {
     description: "flow-field2",
@@ -111,7 +111,7 @@ const presets = {
     attractors: 25000,
     angle: 45,
     canvasSize: 1080, /*540 * 2*/
-    steering: /* src: tree.js */STEERING_OPTIONS.NONE,
+    steering: /* src: tree.js */Tree.steeringOptions.NONE,
   },
   flowfieldPlay: {
     description: "flow-field-play",
@@ -122,7 +122,7 @@ const presets = {
     attractors: 25000,
     angle: 45,
     canvasSize: 1080, /*540 * 2*/
-    steering: /* src: tree.js */STEERING_OPTIONS.NONE,
+    steering: /* src: tree.js */Tree.steeringOptions.NONE,
   },
   flowfieldPlay2: {
     description: "flow-field-play2",
@@ -133,7 +133,7 @@ const presets = {
     attractors: 25000,
     angle: 15,
     canvasSize: 1080, /*540 * 2*/
-    steering: /* src: tree.js */STEERING_OPTIONS.ROUNDING,
+    steering: /* src: tree.js */Tree.steeringOptions.ROUNDING,
   },
   test2: {
     description: "test2",
@@ -144,7 +144,7 @@ const presets = {
     attractors: 500,//25000,
     angle: 45,
     canvasSize: 540, /*540 * 2*/
-    steering: /* src: tree.js */STEERING_OPTIONS.ROUNDING,
+    steering: /* src: tree.js */Tree.steeringOptions.ROUNDING,
   },
   test: {
     description: "test",
@@ -155,7 +155,7 @@ const presets = {
     attractors: 5000,//25000,
     angle: 25,
     canvasSize: 540*2, /*540 * 2*/
-    steering: /* src: tree.js */STEERING_OPTIONS.LEFT_ROUNDING,
+    steering: /* src: tree.js */Tree.steeringOptions.LEFT_ROUNDING,
   },
   test2: {
     description: "test",
@@ -166,7 +166,7 @@ const presets = {
     attractors: 5000,//25000,
     angle: 25,
     canvasSize: 540*2, /*540 * 2*/
-    steering: /* src: tree.js */STEERING_OPTIONS.NONE,
+    steering: /* src: tree.js */Tree.steeringOptions.NONE,
   },
 };
 

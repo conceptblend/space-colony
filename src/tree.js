@@ -2,109 +2,102 @@
 // Code for: https://youtu.be/kKT0v3qhIQY
 
 const DEBUG = !true;
+class Tree {
+  static steeringOptions = {
+    NONE: 0x01,
+    ROUNDING: 0x02,
+    LEFT_ROUNDING: 0x03,
+    RIGHT_ROUNDING: 0x04,
+  };
 
-/* TODO: Make this a static enum on the Tree class */
-const DISTORTION_OPTIONS = {
-  NONE: 1,
-  SINWAVE1: 2,
-  SINWAVE2: 3,
-  SINWAVE3: 4,
-  WARP: 5,
-  FLOW: 6,
-};
+  static distortionOptions = {
+    NONE: 1,
+    SINWAVE1: 2,
+    SINWAVE2: 3,
+    SINWAVE3: 4,
+    WARP: 5,
+    FLOW: 6,
+  };
 
-const distortion = DISTORTION_OPTIONS.FLOW; //DISTORTION_OPTIONS.WARP;
+  get MAXDIST_3() { return this.maxDist * 3.0 };
+  get MAXDIST_3over2() { return this.MAXDIST_3 * 0.5 }
 
-const STEERING_OPTIONS = {
-  NONE: 0x01,
-  ROUNDING: 0x02,
-  LEFT_ROUNDING: 0x03,
-  RIGHT_ROUNDING: 0x04,
-};
-const defaultOptions = {
-  width: 400, // canvasSize
-  height: 400, // canvasSize
-  numLeaves: 500, // attractors
-  branchLength: 4,
-  maxDist: 96,
-  minDist: 24,
-  angle: 120,
-  steering: STEERING_OPTIONS.LEFT_ROUNDING,
-}
-
-function Tree( options ) {
-  this.angle = options?.angle ?? defaultOptions.angle;
-  this.branchLength = options?.branchLength ?? defaultOptions.branchLength;
-  this.height = options?.height ?? defaultOptions.height;
-  this.numLeaves = options?.numLeaves ?? defaultOptions.numLeaves;
-  this.maxDist = options?.maxDist ?? defaultOptions.maxDist;
-  this.minDist = options?.minDist ?? defaultOptions.minDist;
-  this.width = options?.width ?? defaultOptions.width;
-  this.steering = options?.steering ?? defaultOptions.steering;
-  this.seed = options?.seed ?? Math.random() * 512;
-  this.fluidDistortion = new FluidDistortion({
-    cols: 40,
-    rows: 40,
-    k: 0.00085,
-  });
-
-  const MAXDIST_3 = this.maxDist * 3.0;
-  const MAXDIST_3over2 = MAXDIST_3 * 0.5;
-
-  this.qt = new QuadTree(new Rect(0, 0, this.width, this.height), 4);
-  this.leaves = [];
-
-  // Create some leaves
-  let weight = 0;
-  let offset = this.width / 10;
-  let nw = this.width - 2 * offset;
-  let nh = this.height - 2 * offset;
-
-
-  for (var i = 0, len = this.numLeaves; i < len; i++) {
-    weight = Math.ceil(Math.random() * 10);
-    // Skip if the leaf/attractor would be inside the circle
-    let x = Math.floor(Math.random()*nw);
-    let y = Math.floor(Math.random()*nh);
-    let xr = x - nw/2;
-    let yr = y - nh/2;
-    let sdfContainer = 1;//Math.sign(4*offset - Math.sqrt(xr * xr + yr * yr));
-    // let sdfBite = 1.0;// Math.sign(Math.sqrt(xr * xr + yr * yr) - 2*offset);
-    // if (sdfContainer > 0 && sdfBite > 0) {
-    if ( sdfContainer > 0 ) {
-      this.leaves.push(new Leaf(
-        weight, // weight
-        createVector(offset + x, offset + y)
-      ));
-    }
-  }
-
-  // Set up the trunk/root
-  var pos = createVector(offset + Math.floor(Math.random()*nw), offset + Math.floor(Math.random()*nh) );
-  var dir = createVector(0, 1.0);
-  var root = new Branch(null, pos, dir, this.branchLength);
-
-  this.qt.insert(root);
-
-  var current = root;
-  var found = false;
-
-
-  while (!found) {
-    this.leaves.forEach(leaf => {
-      var d = p5.Vector.dist(current.pos, leaf.pos);
-      if (d < this.maxDist) {
-        found = true;
-      }
+  constructor( options ) {
+    this.angle = options?.angle ?? 120;
+    this.branchLength = options?.branchLength ?? 4;
+    this.height = options?.height ?? 400;
+    this.numLeaves = options?.numLeaves ?? 500;
+    this.maxDist = options?.maxDist ?? 96;
+    this.minDist = options?.minDist ?? 24;
+    this.width = options?.width ?? 400;
+    this.steering = options?.steering ?? Tree.steeringOptions.LEFT_ROUNDING;
+    this.seed = options?.seed ?? Math.random() * 512;
+    this.distortion = options?.distortion ?? Tree.distortionOptions.FLOW; //Tree.distortionOptions.WARP;
+    this.fluidDistortion = new FluidDistortion({
+      cols: 40,
+      rows: 40,
+      k: 0.00085,
     });
-    if (!found) {
-      var branch = current.next();
-      current = branch;
-      this.qt.insert(current);
+
+    this.qt = new QuadTree(new Rect(0, 0, this.width, this.height), 4);
+    this.leaves = [];
+
+    this.setup();
+  }
+
+  setup() {
+
+    // Create some leaves
+    let weight = 0;
+    let offset = this.width / 10;
+    let nw = this.width - 2 * offset;
+    let nh = this.height - 2 * offset;
+
+    for (var i = 0, len = this.numLeaves; i < len; i++) {
+      weight = Math.ceil(Math.random() * 10);
+      // Skip if the leaf/attractor would be inside the circle
+      let x = Math.floor(Math.random()*nw);
+      let y = Math.floor(Math.random()*nh);
+      // let xr = x - nw/2;
+      // let yr = y - nh/2;
+      let sdfContainer = 1;//Math.sign(4*offset - Math.sqrt(xr * xr + yr * yr));
+      // let sdfBite = 1.0;// Math.sign(Math.sqrt(xr * xr + yr * yr) - 2*offset);
+      // if (sdfContainer > 0 && sdfBite > 0) {
+      if ( sdfContainer > 0 ) {
+        this.leaves.push(new Leaf(
+          weight, // weight
+          createVector(offset + x, offset + y)
+        ));
+      }
+    }
+
+    // Set up the trunk/root
+    var pos = createVector(offset + Math.floor(Math.random()*nw), offset + Math.floor(Math.random()*nh) );
+    var dir = createVector(0, 1.0);
+    var root = new Branch(null, pos, dir, this.branchLength);
+
+    this.qt.insert(root);
+
+    var current = root;
+    var found = false;
+
+
+    while (!found) {
+      this.leaves.forEach(leaf => {
+        var d = p5.Vector.dist(current.pos, leaf.pos);
+        if (d < this.maxDist) {
+          found = true;
+        }
+      });
+      if (!found) {
+        var branch = current.next();
+        current = branch;
+        this.qt.insert(current);
+      }
     }
   }
 
-  this.grow = function() {
+  grow() {
 
     this.leaves.forEach(leaf => {
       var closestBranch = null;
@@ -112,27 +105,27 @@ function Tree( options ) {
       
       // ** DISRUPT THE LEAFS/FOODSOURCE
       if ( USE_DISTORTION ) {
-        switch ( distortion ) {
-          case DISTORTION_OPTIONS.SINWAVE1:
+        switch ( this.distortion ) {
+          case Tree.distortionOptions.SINWAVE1:
             leaf.pos.add(sin(0.5*leaf.pos.y), 0);
             break;
-          case DISTORTION_OPTIONS.SINWAVE2:
+          case Tree.distortionOptions.SINWAVE2:
             leaf.pos.add(sin(2*leaf.pos.y), 0);
             break;
-          case DISTORTION_OPTIONS.SINWAVE3:
+          case Tree.distortionOptions.SINWAVE3:
             leaf.pos.add(2*sin(4*leaf.pos.y), 0);
             break;
-          case DISTORTION_OPTIONS.WARP:
+          case Tree.distortionOptions.WARP:
             leaf.pos.add(sin(leaf.pos.y + this.seed), (0.5 + 0.5*cos(leaf.pos.x  + this.seed)) * 2);
             break;
-          case DISTORTION_OPTIONS.FLOW:
+          case Tree.distortionOptions.FLOW:
             let xw = leaf.pos.x / width,
                 yh = leaf.pos.y / height;
             let dir = this.fluidDistortion.getDirectionFromNormalized( xw, yh ) * 360;
             let mag = this.fluidDistortion.getMagnitudeFromNormalized( xw, yh ) * 10;
             leaf.pos.add( mag * Math.cos( dir ), mag * Math.sin( dir ) );
             break;
-          case DISTORTION_OPTIONS.NONE:
+          case Tree.distortionOptions.NONE:
             break;
         }
       }
@@ -140,10 +133,10 @@ function Tree( options ) {
 
       let branches = this.qt.query(
         new Rect(
-          leaf.pos.x - MAXDIST_3over2,
-          leaf.pos.y - MAXDIST_3over2,
-          MAXDIST_3,
-          MAXDIST_3
+          leaf.pos.x - this.MAXDIST_3over2,
+          leaf.pos.y - this.MAXDIST_3over2,
+          this.MAXDIST_3,
+          this.MAXDIST_3
         )
       );
 
@@ -194,19 +187,19 @@ function Tree( options ) {
 
         let theta;
         switch ( this.steering ) {
-          case STEERING_OPTIONS.LEFT_ROUNDING:
+          case Tree.steeringOptions.LEFT_ROUNDING:
             /* OR, Round to the nearest N degrees and force left-hand turns */
             theta = Math.floor(branch.dir.heading() / this.angle) * this.angle;
             break;
-          case STEERING_OPTIONS.RIGHT_ROUNDING:
+          case Tree.steeringOptions.RIGHT_ROUNDING:
             // OR, Round to the nearest N degrees and force right-hand turns
             theta = Math.ceil(branch.dir.heading() / this.angle) * this.angle;
             break;
-          case STEERING_OPTIONS.ROUNDING:
+          case Tree.steeringOptions.ROUNDING:
             /* OR, Round to the nearest N degrees */
             theta = Math.round(branch.dir.heading() / this.angle) * this.angle;
             break;
-          case STEERING_OPTIONS.NONE:
+          case Tree.steeringOptions.NONE:
           default:
             break;
         }
@@ -222,11 +215,11 @@ function Tree( options ) {
     }
   }
   
-  this.flatten = function() {    
+  flatten() {    
     return this.qt.flatten();
   }
   
-  this.show = function() {
+  show() {
     // this.leaves.forEach(leaf => leaf.show());
     let branches = this.qt.flatten();
     
@@ -239,7 +232,7 @@ function Tree( options ) {
    * --
    * Naively stash found segments based on a hash of the start and end points.
    **/
-  this.joinAndShow = function() {
+  joinAndShow() {
     let branches = this.qt.flatten();
     /*DEBUG &&*/ console.log(`Full: ${branches.length}`);
     
@@ -270,7 +263,7 @@ function Tree( options ) {
     });
   }
   
-  this._dedupe = function(t) {
+  _dedupe( t ) {
     let visitedHash = {};
     let trimmed = t.filter((branch) => {
       if (branch.parent === null) return true;
@@ -297,7 +290,7 @@ function Tree( options ) {
   }
 
 
-  this.createSegments = function( t ) {
+  createSegments( t ) {
     let branches = [...t];
     let segments = [];
     // Create all of the line segments and set the up to
@@ -327,13 +320,8 @@ function Tree( options ) {
     });
     return segments;
   }
-  /** ************************************
-   *
-   *
-   *
-   **/
   
-  this._simplify = function(t) {
+  _simplify( t ) {
 
     let segments_raw = [...t];
     let segments_optimized = [];
@@ -386,7 +374,7 @@ function Tree( options ) {
     return segments_optimized;
   }
 
-  this.currentConfig = function () {
+  currentConfig() {
     return {
       angle: this.angle,
       branchLength: this.branchLength,
