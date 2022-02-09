@@ -3,20 +3,22 @@
 // http://patreon.com/codingtrain
 // Code for: https://youtu.be/kKT0v3qhIQY
 
-function Branch(parent, pos, dir, length = 4) {
-  this.pos = pos;
-  this.parent = parent;
-  this.dir = dir;
-  this.origDir = this.dir.copy();
-  this.count = 0;
-  this.len = length; // TODO: Expose this as a param and use it to vary the config
-
-  this.reset = function() {
+class Branch {
+  constructor( parent, pos, dir, length = 4 ) {
+    this.pos = pos;
+    this.parent = parent;
+    this.dir = dir;
+    this.origDir = this.dir.copy();
+    this.count = 0;
+    this.len = length; // TODO: Expose this as a param and use it to vary the config
+  }
+  
+  reset() {
     this.dir = this.origDir.copy();
     this.count = 0;
   }
   
-  this.overlapsExactly = function(b) {
+  overlapsExactly( b ) {
     
     if (this.parent === null || b.parent === null) {
       // Test if they're both the root node
@@ -35,16 +37,15 @@ function Branch(parent, pos, dir, length = 4) {
     return false;
   }
 
-
-  this.next = function() {
+  next() {
     var nextDir = p5.Vector.mult(this.dir, this.len);
     var nextPos = p5.Vector.add(this.pos, nextDir);
     var nextBranch = new Branch(this, nextPos, this.dir.copy(), this.len);
     return nextBranch;
   }
 
-  this.show = function() {
-    if (parent != null) {
+  show() {
+    if ( this.parent !== null ) {
       line(this.pos.x, this.pos.y, this.parent.pos.x, this.parent.pos.y);
     }
   }
