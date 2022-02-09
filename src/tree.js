@@ -3,6 +3,7 @@
 
 const DEBUG = !true;
 
+/* TODO: Make this a static enum on the Tree class */
 const DISTORTION_OPTIONS = {
   NONE: 1,
   SINWAVE1: 2,
@@ -11,6 +12,7 @@ const DISTORTION_OPTIONS = {
   WARP: 5,
   FLOW: 6,
 };
+
 const distortion = DISTORTION_OPTIONS.FLOW; //DISTORTION_OPTIONS.WARP;
 
 const STEERING_OPTIONS = {
@@ -82,20 +84,6 @@ class FluidDistortion {
   getMagnitudeFromNormalized( x, y ) {
     return this.getMagnitude( Math.floor( x * this.cols), Math.floor( y * this.rows ));
   }
-}
-
-function Segment( _head, _tail, _colour ) {
-  this.head = _head;
-  this.tail = _tail;
-  this.c = _colour ?? [0,0,0];
-
-  this.x1 = () => this.head.pos.x;
-  this.x2 = () => this.tail.pos.x;
-  this.y1 = () => this.head.pos.y;
-  this.y2 = () => this.tail.pos.y;
-
-  this.slope = (this.y2() - this.y1()) / (this.x2() - this.x1());
- 
 }
 
 function Tree( options ) {
@@ -332,7 +320,7 @@ function Tree( options ) {
       DEBUG && stroke( s.c );
       // TODO: Find a way to call the stored `branch.show` method instead of
       // manually recreating it.
-      line( s.x1(), s.y1(), s.x2(), s.y2() );
+      line( s.x1, s.y1, s.x2, s.y2 );
     });
   }
   
@@ -427,11 +415,11 @@ function Tree( options ) {
         matches.forEach(m => {
           if ( found ) return;
           
-          if ( nearEqual( raw.x1(), m.x2() ) && nearEqual( raw.y1(), m.y2() ) ) {
+          if ( nearEqual( raw.x1, m.x2 ) && nearEqual( raw.y1, m.y2 ) ) {
             // Extend the optimized segment "BEFORE"
             m.tail = raw.tail;
             found = true;
-          } else if ( nearEqual( raw.x2(), m.x1() ) && nearEqual( raw.y2(), m.y1() ) ) {
+          } else if ( nearEqual( raw.x2, m.x1 ) && nearEqual( raw.y2, m.y1 ) ) {
             // Extend the optimized segment "AFTER"
             m.head = raw.head;
             found = true;

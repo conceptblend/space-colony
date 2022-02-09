@@ -145,6 +145,7 @@ function initDrawing() {
     minDist: CONFIG.minDist,
     angle: parseInt( io_angle?.value() ) ?? CONFIG.angle,
     steering: parseInt( io_steering?.selected() ) ?? CONFIG.steering,
+    // distortionMethod: FluidDistortion.distortionMethod.FLOW,
   });
 
   
