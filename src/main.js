@@ -8,12 +8,9 @@
 // Runtime: 8.7s @ l:200, max:64, min:16, canvas:1080,count:5000
 // Runtime: 28.4s @ l:200, max:64, min:16, canvas:1080,count:25000
 
-let tree;
-
 const SHOWINPROGESS = true;
-
 let DRAW_FLOWFIELD = !true;
-let USE_DISTORTION = true;
+
 /**
  * ==== EXPORT CONFIGURATION
  */
@@ -32,12 +29,15 @@ const EXPORT_METHODS = {
     extension: "png"
   },
 };
-const EXPORTMETHOD = EXPORT_METHODS.jpg;
+const EXPORTMETHOD = EXPORT_METHODS.png;
 /* /EXPORT CONFIGURATION */
 
 /**
  * ==== GLOBALS initialization
  */
+
+let tree;
+
 let iterations = CONFIG.lifespan;
 let isRunning = false;
 
@@ -85,7 +85,7 @@ function setup() {
   const getColorWay = () => colorWay[ Math.floor( Math.random() * colorWay.length ) ];
   
   bgColor = color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
-  fgColor = color( getColorWay() );; //color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
+  fgColor = color( "#523333" );; //color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
   
   background(bgColor);
   // Optimization when drawing only the stroke

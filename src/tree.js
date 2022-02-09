@@ -104,7 +104,7 @@ class Tree {
       var record = this.maxDist;
       
       // ** DISRUPT THE LEAFS/FOODSOURCE
-      if ( USE_DISTORTION ) {
+      if ( this.distortion !== Tree.distortionOptions.NONE ) {
         switch ( this.distortion ) {
           case Tree.distortionOptions.SINWAVE1:
             leaf.pos.add(sin(0.5*leaf.pos.y), 0);
@@ -124,8 +124,6 @@ class Tree {
             let dir = this.fluidDistortion.getDirectionFromNormalized( xw, yh ) * 360;
             let mag = this.fluidDistortion.getMagnitudeFromNormalized( xw, yh ) * 10;
             leaf.pos.add( mag * Math.cos( dir ), mag * Math.sin( dir ) );
-            break;
-          case Tree.distortionOptions.NONE:
             break;
         }
       }
