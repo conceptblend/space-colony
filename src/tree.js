@@ -32,12 +32,12 @@ class Tree {
     this.width = options?.width ?? 400;
     this.steering = options?.steering ?? Tree.steeringOptions.LEFT_ROUNDING;
     this.seed = options?.seed ?? Math.random() * 512;
-    this.distortion = options?.distortion ?? Tree.distortionOptions.FLOW; //Tree.distortionOptions.WARP;
-    this.fluidDistortion = new FluidDistortion({
+    this.distortion = options?.distortion ?? Tree.distortionOptions.NONE; //Tree.distortionOptions.WARP;
+    this.fluidDistortion = (this.distortion === Tree.distortionOptions.FLOW) ? ( options?.fluidDistortion ?? new FluidDistortion({
       cols: 40,
       rows: 40,
       k: 0.00085,
-    });
+    }) ) : null;
 
     this.qt = new QuadTree(new Rect(0, 0, this.width, this.height), 4);
     this.leaves = [];
@@ -49,15 +49,15 @@ class Tree {
 
     // Create some leaves
     let weight = 0;
-    let offset = this.width / 10;
+    let offset = this.width * 0.1;
     let nw = this.width - 2 * offset;
     let nh = this.height - 2 * offset;
 
     for (var i = 0, len = this.numLeaves; i < len; i++) {
-      weight = Math.ceil(Math.random() * 10);
+      weight = Math.ceil( Math.random() * 10 );
       // Skip if the leaf/attractor would be inside the circle
-      let x = Math.floor(Math.random()*nw);
-      let y = Math.floor(Math.random()*nh);
+      let x = Math.floor( Math.random() * nw );
+      let y = Math.floor( Math.random() * nh );
       // let xr = x - nw/2;
       // let yr = y - nh/2;
       let sdfContainer = 1;//Math.sign(4*offset - Math.sqrt(xr * xr + yr * yr));

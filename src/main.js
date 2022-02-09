@@ -101,7 +101,6 @@ function setup() {
   io_angle = createInput( CONFIG.angle, 'number' );
   io_branchLength = createInput( CONFIG.branchLength, 'number' );
   io_export = createCheckbox( "Export when done", EXPORT );
-  io_useDistortion = createCheckbox( "Use distortion", USE_DISTORTION );
   io_showFlowField = createCheckbox( "Show flow field", DRAW_FLOWFIELD );
   io_run = createButton("Run");
   io_run.mouseClicked(e => initDrawing() );
@@ -115,15 +114,24 @@ function setup() {
   io_steering.option( "Left-rounded", Tree.steeringOptions.LEFT_ROUNDING );
   io_steering.option( "Right-rounded", Tree.steeringOptions.RIGHT_ROUNDING );
   io_steering.selected( CONFIG.steering );
+
+  io_useDistortion = createSelect();
+  io_useDistortion.option( "No distortion", Tree.distortionOptions.NONE );
+  io_useDistortion.option( "Sine wave 1", Tree.distortionOptions.SINWAVE1 );
+  io_useDistortion.option( "Sine wave 2", Tree.distortionOptions.SINWAVE2 );
+  io_useDistortion.option( "Sine wave 3", Tree.distortionOptions.SINWAVE3 );
+  io_useDistortion.option( "Warp", Tree.distortionOptions.WARP );
+  io_useDistortion.option( "Flow", Tree.distortionOptions.FLOW );
+  io_useDistortion.selected( CONFIG.distortion ?? Tree.distortionOptions.NONE );
   
   controlContainer.child( io_angle );
   controlContainer.child( io_branchLength );
   controlContainer.child( io_steering );
+  controlContainer.child( io_useDistortion );
   controlContainer.child( io_run );
   controlContainer.child( io_exportNow );
   controlContainer.child( io_export );
   controlContainer.child( io_showFlowField );
-  controlContainer.child( io_useDistortion );
   
   // initDrawing();
   noLoop();
@@ -145,7 +153,12 @@ function initDrawing() {
     minDist: CONFIG.minDist,
     angle: parseInt( io_angle?.value() ) ?? CONFIG.angle,
     steering: parseInt( io_steering?.selected() ) ?? CONFIG.steering,
-    // distortionMethod: FluidDistortion.distortionMethod.FLOW,
+    distortion: parseInt( io_useDistortion.selected() ) ?? Tree.distortionOptions.FLOW,
+    fluidDistortion: new FluidDistortion({
+      cols: 20,
+      rows: 20,
+      k: 0.00085,
+    })
   });
 
   
@@ -161,8 +174,7 @@ function initDrawing() {
 function draw() {
   if ( !isRunning ) return;
   
-  USE_DISTORTION = io_useDistortion.checked();
-  DRAW_FLOWFIELD = io_showFlowField.checked();
+  DRAW_FLOWFIELD = io_showFlowField.checked() && ( io_useDistortion.selected() === Tree.distortionOptions.FLOW );
 
   if ( iterations-- > 0 && tree.leaves.length > 0 ) {
     tree.grow();
@@ -207,9 +219,7 @@ function draw() {
     }
     // %%%%%%%%%%%%%%%%%
 
-
     tree.joinAndShow();
-
 
     console.log( `Runtime: ${( t_end - t_start )/1000}s` );
     if ( io_export?.checked() ?? EXPORT ) {
@@ -221,7 +231,6 @@ function draw() {
 }
 
 function saveImage() {
-
   let cfg = tree.currentConfig();
   cfg.attractors = CONFIG.attractors;
   cfg.lifespan = CONFIG.lifespan;
@@ -231,5 +240,4 @@ function saveImage() {
   save( `${name}.${EXPORTMETHOD.extension}` );
   // Export the configuration
   saveJSON( cfg, `${name}.config.json` );
-
 }

@@ -167,6 +167,7 @@ const presets = {
     angle: 25,
     canvasSize: 540*2, /*540 * 2*/
     steering: /* src: tree.js */Tree.steeringOptions.NONE,
+    distortion: /* src: tree.js */Tree.distortionOptions.FLOW,
   },
 };
 
