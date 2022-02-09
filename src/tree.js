@@ -73,7 +73,9 @@ class Tree {
 
     // Set up the trunk/root
     var pos = createVector(offset + Math.floor(Math.random()*nw), offset + Math.floor(Math.random()*nh) );
-    var dir = createVector(0, 1.0);
+    var dir = p5.Vector.sub( createVector( this.width*0.5, this.height*0.5 ), pos ).normalize();
+
+    console.log( pos, dir );
     var root = new Branch(null, pos, dir, this.branchLength);
 
     this.qt.insert(root);
