@@ -70,7 +70,7 @@ function setup() {
   }
   angleMode( DEGREES );
 
-  const colorWay = [
+  const colorWay = CONFIG.colorWay ?? [
     "#4a6670ff",
     "#565c76ff",
     "#6d6498ff",

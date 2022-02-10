@@ -169,6 +169,38 @@ const presets = {
     steering: /* src: tree.js */Tree.steeringOptions.NONE,
     distortion: /* src: tree.js */Tree.distortionOptions.FLOW,
   },
+  bw: {
+    description: "test",
+    lifespan: 128,
+    maxDist: 16,
+    minDist: 3,
+    branchLength: 6,
+    attractors: 5000,//25000,
+    angle: 60,
+    canvasSize: 540*2, /*540 * 2*/
+    steering: /* src: tree.js */Tree.steeringOptions.LEFT_ROUNDING,
+    distortion: /* src: tree.js */Tree.distortionOptions.FLOW,
+    // colorWay: [
+    //   // "#FFFFFF",
+    //   "#202d95"
+    // ],
+  },
+  bw2: {
+    description: "test",
+    lifespan: 64,
+    maxDist: 16,
+    minDist: 3,
+    branchLength: 3,
+    attractors: 25000,//25000,
+    angle: 29,
+    canvasSize: 540*2, /*540 * 2*/
+    steering: /* src: tree.js */Tree.steeringOptions.NONE,
+    distortion: /* src: tree.js */Tree.distortionOptions.NONE,
+    // colorWay: [
+    //   // "#FFFFFF",
+    //   "#202d95"
+    // ],
+  },
 };
 
-const CONFIG = presets.test2;
+const CONFIG = presets.bw2;
