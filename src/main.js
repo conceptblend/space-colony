@@ -106,7 +106,7 @@ function setup() {
   io_run.mouseClicked(e => initDrawing() );
 
   io_exportNow = createButton( "Export image and config" );
-  io_exportNow.mouseClicked( e => saveImage() );
+  io_exportNow.mouseClicked( e => downloadOutput() );
 
   io_steering = createSelect();
   io_steering.option( "No steering", Tree.steeringOptions.NONE );
@@ -260,14 +260,34 @@ function draw() {
   }
 }
 
-function saveImage() {
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function getName() {
   let cfg = tree.currentConfig();
   cfg.attractors = CONFIG.attractors;
   cfg.lifespan = CONFIG.lifespan;
 
-  let name = `SpaceColonization-Bizarre-min_${cfg.minDist}-max_${cfg.maxDist}-lifespan_${cfg.lifespan}-attrCount_${cfg.attractors}-N_${cfg.angle}-length_${cfg.branchLength}-${new Date(t_start).toISOString()}`;
-  // Export the image
-  save( `${name}.${EXPORTMETHOD.extension}` );
-  // Export the configuration
-  saveJSON( cfg, `${name}.config.json` );
+  // Encode the parameters into the filename
+  let params = MD5( JSON.stringify( cfg ) );
+  return `SpaceColonization-${CONFIG.description.replace(/\s+/gi, '_')}-${params}-${new Date().toISOString()}`;
 }
+
+function saveImage( ext = 'png' ) {
+  save(`${ getName() }.${ ext }`);
+}
+
+function saveConfig() {
+  let cfg = tree.currentConfig();
+  cfg.attractors = CONFIG.attractors;
+  cfg.lifespan = CONFIG.lifespan;
+  saveJSON( cfg, `${getName()}-config.json` );
+}
+
+function downloadOutput() {
+  saveImage( EXPORTMETHOD.extension );
+  saveConfig();
+}
+
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
