@@ -54,6 +54,7 @@ let controlContainer,
     io_steering,
     io_export,
     io_run,
+    io_runRandom,
     io_exportNow,
     io_useDistortion;
 
@@ -70,27 +71,7 @@ function setup() {
   }
   angleMode( DEGREES );
 
-  const colorWay = CONFIG.colorWay ?? [
-    "#4a6670ff",
-    "#565c76ff",
-    "#6d6498ff",
-    "#707398ff",
-    "#78a493ff",
-    "#7ea791ff",
-    "#989570ff",
-    "#987073ff",
-    "#739870ff"
-  ];
-
-  const getColorWay = () => colorWay[ Math.floor( Math.random() * colorWay.length ) ];
-  
-  bgColor = color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
-  fgColor = color( "#523333" );; //color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
-  
-  background(bgColor);
-  // Optimization when drawing only the stroke
   noFill();
-  stroke( fgColor );
   strokeWeight( 2 ); // 16
   // End optimization
   /* /ENVIRONMENT init */
@@ -104,6 +85,9 @@ function setup() {
   io_showFlowField = createCheckbox( "Show flow field", DRAW_FLOWFIELD );
   io_run = createButton("Run");
   io_run.mouseClicked(e => initDrawing() );
+
+  io_runRandom = createButton("Randomize");
+  io_runRandom.mouseClicked(e => initDrawing( Math.random() ) );
 
   io_exportNow = createButton( "Export image and config" );
   io_exportNow.mouseClicked( e => downloadOutput() );
@@ -129,18 +113,51 @@ function setup() {
   controlContainer.child( io_steering );
   controlContainer.child( io_useDistortion );
   controlContainer.child( io_run );
+  controlContainer.child( io_runRandom );
   controlContainer.child( io_exportNow );
   controlContainer.child( io_export );
   controlContainer.child( io_showFlowField );
-  
-  // initDrawing();
+
   noLoop();
 }
 
-function initDrawing() {
+function initDrawing( newSeed ) {
   /**
    * ==== DRAWING initialization
    */
+
+  CONFIG.seed = newSeed ? newSeed : CONFIG.seed ?? Math.random();
+  Math.seedrandom( CONFIG.seed )
+  /**
+   * IMPORTANT:
+   * If you omit seeding the noise, the first pass is distinct from all
+   * others because the first call to noise() will generate a random number but
+   * subsequent calls do not. Thus, the sequence is disrupted on the first pass.
+   **/
+   noiseSeed( CONFIG.seed );
+   /** /IMPORTANT */
+
+  const colorWay = CONFIG.colorWay ?? [
+    "#4a6670ff",
+    "#565c76ff",
+    "#6d6498ff",
+    "#707398ff",
+    "#78a493ff",
+    "#7ea791ff",
+    "#989570ff",
+    "#987073ff",
+    "#739870ff"
+  ];
+ 
+  const getColorWay = () => colorWay[ Math.floor( Math.random() * colorWay.length ) ];
+
+  bgColor = color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
+  fgColor = color( "#523333" );; //color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
+
+  background( bgColor );
+  // Optimization when drawing only the stroke
+  noFill();
+  stroke( fgColor );
 
   iterations = CONFIG.lifespan;
 
@@ -150,7 +167,7 @@ function initDrawing() {
   let weight = 0;
   let offset = CONFIG.canvasSize * 0.1;
   let ns = CONFIG.canvasSize - 2 * offset;
- 
+  
   for (var i = 0, len = CONFIG.attractors; i < len; i++) {
     weight = Math.ceil( Math.random() * 10 );
     // Skip if the leaf/attractor would be outside the circle
@@ -168,42 +185,42 @@ function initDrawing() {
       ));
     }
   }
-
+  
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 
   tree = new Tree({
     width: CONFIG.canvasSize,
     height: CONFIG.canvasSize,
     numLeaves: CONFIG.attractors,
+    leaves: leaves,
     branchLength: parseInt( io_branchLength?.value() ) ?? CONFIG.branchLength,
     maxDist: CONFIG.maxDist,
     minDist: CONFIG.minDist,
     angle: parseInt( io_angle?.value() ) ?? CONFIG.angle,
     steering: parseInt( io_steering?.selected() ) ?? CONFIG.steering,
     distortion: parseInt( io_useDistortion.selected() ) ?? Tree.distortionOptions.FLOW,
+    /* TODO: Always generating the FluidDistortion is wasteful. Reconsider. */
     fluidDistortion: new FluidDistortion({
       cols: 20,
       rows: 20,
       k: 0.00085,
-    }),
-    leaves
+    })
   });
 
   
   /* /DRAWING init */
-  clear();
-  loop();
+
   console.log("Drawing...");
   isRunning = true;
   t_start = Date.now();
+  loop(); 
 }
 
 
 function draw() {
   if ( !isRunning ) return;
-  
+  clear();
+
   DRAW_FLOWFIELD = io_showFlowField.checked() && ( io_useDistortion.selected() === Tree.distortionOptions.FLOW );
 
   if ( iterations-- > 0 && tree.leaves.length > 0 ) {
@@ -253,9 +270,9 @@ function draw() {
 
     console.log( `Runtime: ${( t_end - t_start )/1000}s` );
     if ( io_export?.checked() ?? EXPORT ) {
-      saveImage();
+      saveImage( EXPORTMETHOD.extension );
     }
-
+    isRunning = false;
     noLoop();
   }
 }
@@ -265,9 +282,8 @@ function draw() {
 
 function getName() {
   let cfg = tree.currentConfig();
-  cfg.attractors = CONFIG.attractors;
   cfg.lifespan = CONFIG.lifespan;
-
+  cfg.seed = CONFIG.seed;
   // Encode the parameters into the filename
   let params = MD5( JSON.stringify( cfg ) );
   return `SpaceColonization-${CONFIG.description.replace(/\s+/gi, '_')}-${params}-${new Date().toISOString()}`;
@@ -279,8 +295,8 @@ function saveImage( ext = 'png' ) {
 
 function saveConfig() {
   let cfg = tree.currentConfig();
-  cfg.attractors = CONFIG.attractors;
   cfg.lifespan = CONFIG.lifespan;
+  cfg.seed = CONFIG.seed;
   saveJSON( cfg, `${getName()}-config.json` );
 }
 

@@ -32,6 +32,7 @@ class Tree {
     this.width = options?.width ?? 400;
     this.steering = options?.steering ?? Tree.steeringOptions.LEFT_ROUNDING;
     this.seed = options?.seed ?? Math.random() * 512;
+
     this.distortion = options?.distortion ?? Tree.distortionOptions.NONE; //Tree.distortionOptions.WARP;
     this.fluidDistortion = (this.distortion === Tree.distortionOptions.FLOW) ? ( options?.fluidDistortion ?? new FluidDistortion({
       cols: 40,
@@ -46,7 +47,6 @@ class Tree {
   }
 
   setup() {
-
     let offset = this.width * 0.1;
     let nw = this.width - 2 * offset;
     let nh = this.height - 2 * offset;
@@ -55,7 +55,7 @@ class Tree {
       // Create some leaves
       let weight = 0;
 
-      for (var i = 0, len = this.numLeaves; i < len; i++) {
+      for (let i = 0, len = this.numLeaves; i < len; i++) {
         weight = Math.ceil( Math.random() * 10 );
         // Skip if the leaf/attractor would be inside the circle
         let x = Math.floor( Math.random() * nw );
@@ -75,24 +75,24 @@ class Tree {
     }
     
     // Set up the trunk/root
-    var pos = createVector(offset + Math.floor(Math.random()*nw), offset + Math.floor(Math.random()*nh) );
-    var dir = p5.Vector.sub( createVector( this.width*0.5, this.height*0.5 ), pos ).normalize();
-    var root = new Branch(null, pos, dir, this.branchLength);
+    let pos = createVector(offset + Math.floor(Math.random()*nw), offset + Math.floor(Math.random()*nh) );
+    let dir = p5.Vector.sub( createVector( this.width*0.5, this.height*0.5 ), pos ).normalize();
+    let root = new Branch(null, pos, dir, this.branchLength);
 
     this.qt.insert(root);
 
-    var current = root;
-    var found = false;
+    let current = root;
+    let found = false;
 
     while (!found) {
       this.leaves.forEach(leaf => {
-        var d = p5.Vector.dist(current.pos, leaf.pos);
+        let d = p5.Vector.dist(current.pos, leaf.pos);
         if (d < this.maxDist) {
           found = true;
         }
       });
       if (!found) {
-        var branch = current.next();
+        let branch = current.next();
         current = branch;
         this.qt.insert(current);
       }
@@ -102,8 +102,8 @@ class Tree {
   grow() {
 
     this.leaves.forEach(leaf => {
-      var closestBranch = null;
-      var record = this.maxDist;
+      let closestBranch = null;
+      let record = this.maxDist;
       
       // ** DISRUPT THE LEAFS/FOODSOURCE
       if ( this.distortion !== Tree.distortionOptions.NONE ) {
@@ -142,7 +142,7 @@ class Tree {
 
       branches.forEach(branch => {
         if (leaf.reached) return;
-        var d = p5.Vector.dist(leaf.pos, branch.pos);
+        let d = p5.Vector.dist(leaf.pos, branch.pos);
         if (d < this.minDist) {
           leaf.reached = true;
           closestBranch = null;
@@ -153,14 +153,14 @@ class Tree {
       });
 
       if (closestBranch != null) {
-        var newDir = p5.Vector.sub(leaf.pos, closestBranch.pos);
+        let newDir = p5.Vector.sub(leaf.pos, closestBranch.pos);
         closestBranch.dir.add(newDir.mult(leaf.weight).normalize());
         closestBranch.count++;
       }
     });
 
     // Clean up dead leaves
-    for (var i = this.leaves.length - 1; i >= 0; i--) {
+    for (let i = this.leaves.length - 1; i >= 0; i--) {
       if (this.leaves[i].reached) {
         this.leaves.splice(i, 1);
       }
@@ -171,7 +171,7 @@ class Tree {
     //
     let branches = this.qt.flatten();
     let branch;
-    for (var i = branches.length - 1; i >= 0; i--) {
+    for (let i = branches.length - 1; i >= 0; i--) {
       branch = branches[i];
       if (branch.count > 0) {
         /* Average the directions based on the attractors applied */
@@ -379,11 +379,18 @@ class Tree {
       branchLength: this.branchLength,
       canvasSize: this.width === this.height ? this.width : -1,
       height: this.height,
+      attractors: this.numLeaves,
       numLeaves: this.numLeaves,
       maxDist: this.maxDist,
       minDist: this.minDist,
       width: this.width,
       steering: this.steering,
+      distortion: this.distortion,
+      fluidDistortion: this.fluidDistortion ? {
+        cols: this.fluidDistortion.cols,
+        rows: this.fluidDistortion.rows,
+        k: this.fluidDistortion.k
+      } : null
     }
   }
 }

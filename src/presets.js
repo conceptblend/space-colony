@@ -216,6 +216,7 @@ const presets = {
       "#FFFFFF",
       // "#202d95"
     ],
+    seed: "go for it woooo",
   }, 
 };
 
