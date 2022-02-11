@@ -144,6 +144,35 @@ function initDrawing() {
 
   iterations = CONFIG.lifespan;
 
+  // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  let leaves = [];
+  let weight = 0;
+  let offset = CONFIG.canvasSize * 0.1;
+  let ns = CONFIG.canvasSize - 2 * offset;
+ 
+  for (var i = 0, len = CONFIG.attractors; i < len; i++) {
+    weight = Math.ceil( Math.random() * 10 );
+    // Skip if the leaf/attractor would be outside the circle
+    let x = Math.floor( Math.random() * ns );
+    let y = Math.floor( Math.random() * ns );
+    let xr = x - ns * 0.5;
+    let yr = y - ns * 0.5;
+    let sdfContainer = Math.sign(4*offset - Math.sqrt(xr * xr + yr * yr));
+    let sdfBite = Math.sign(Math.sqrt(xr * xr + yr * yr) - 2*offset);
+    if (sdfContainer > 0 && sdfBite > 0) {
+    // if ( sdfContainer > 0 ) {
+      leaves.push(new Leaf(
+        createVector(offset + x, offset + y),
+        weight // weight
+      ));
+    }
+  }
+
+  // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
   tree = new Tree({
     width: CONFIG.canvasSize,
     height: CONFIG.canvasSize,
@@ -158,7 +187,8 @@ function initDrawing() {
       cols: 20,
       rows: 20,
       k: 0.00085,
-    })
+    }),
+    leaves
   });
 
   

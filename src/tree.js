@@ -40,37 +40,40 @@ class Tree {
     }) ) : null;
 
     this.qt = new QuadTree(new Rect(0, 0, this.width, this.height), 4);
-    this.leaves = [];
+    this.leaves = options?.leaves ?? [];
 
     this.setup();
   }
 
   setup() {
 
-    // Create some leaves
-    let weight = 0;
     let offset = this.width * 0.1;
     let nw = this.width - 2 * offset;
     let nh = this.height - 2 * offset;
 
-    for (var i = 0, len = this.numLeaves; i < len; i++) {
-      weight = Math.ceil( Math.random() * 10 );
-      // Skip if the leaf/attractor would be inside the circle
-      let x = Math.floor( Math.random() * nw );
-      let y = Math.floor( Math.random() * nh );
-      // let xr = x - nw/2;
-      // let yr = y - nh/2;
-      let sdfContainer = 1;//Math.sign(4*offset - Math.sqrt(xr * xr + yr * yr));
-      // let sdfBite = 1.0;// Math.sign(Math.sqrt(xr * xr + yr * yr) - 2*offset);
-      // if (sdfContainer > 0 && sdfBite > 0) {
-      if ( sdfContainer > 0 ) {
-        this.leaves.push(new Leaf(
-          createVector(offset + x, offset + y),
-          weight // weight
-        ));
+    if ( this.leaves.length === 0 ) {
+      // Create some leaves
+      let weight = 0;
+
+      for (var i = 0, len = this.numLeaves; i < len; i++) {
+        weight = Math.ceil( Math.random() * 10 );
+        // Skip if the leaf/attractor would be inside the circle
+        let x = Math.floor( Math.random() * nw );
+        let y = Math.floor( Math.random() * nh );
+        // let xr = x - nw/2;
+        // let yr = y - nh/2;
+        let sdfContainer = 1;//Math.sign(4*offset - Math.sqrt(xr * xr + yr * yr));
+        // let sdfBite = 1.0;// Math.sign(Math.sqrt(xr * xr + yr * yr) - 2*offset);
+        // if (sdfContainer > 0 && sdfBite > 0) {
+        if ( sdfContainer > 0 ) {
+          this.leaves.push(new Leaf(
+            createVector(offset + x, offset + y),
+            weight // weight
+          ));
+        }
       }
     }
-
+    
     // Set up the trunk/root
     var pos = createVector(offset + Math.floor(Math.random()*nw), offset + Math.floor(Math.random()*nh) );
     var dir = p5.Vector.sub( createVector( this.width*0.5, this.height*0.5 ), pos ).normalize();
@@ -80,7 +83,6 @@ class Tree {
 
     var current = root;
     var found = false;
-
 
     while (!found) {
       this.leaves.forEach(leaf => {
