@@ -191,16 +191,32 @@ const presets = {
     maxDist: 16,
     minDist: 3,
     branchLength: 3,
-    attractors: 25000,//25000,
-    angle: 29,
+    attractors: 5000,//25000,
+    angle: 7,
     canvasSize: 540*2, /*540 * 2*/
     steering: /* src: tree.js */Tree.steeringOptions.NONE,
     distortion: /* src: tree.js */Tree.distortionOptions.NONE,
-    // colorWay: [
-    //   // "#FFFFFF",
-    //   "#202d95"
-    // ],
+    colorWay: [
+      "#FFFFFF",
+      // "#202d95"
+    ],
   },
+  lilcluster: {
+    description: "smallish clusters",
+    lifespan: 128,
+    maxDist: 16,
+    minDist: 3,
+    branchLength: 2,
+    attractors: 5000,//25000,
+    angle: 7,
+    canvasSize: 540*2, /*540 * 2*/
+    steering: /* src: tree.js */Tree.steeringOptions.ROUNDING,
+    distortion: /* src: tree.js */Tree.distortionOptions.SINWAVE1,
+    colorWay: [
+      "#FFFFFF",
+      // "#202d95"
+    ],
+  }, 
 };
 
-const CONFIG = presets.bw2;
+const CONFIG = presets.lilcluster;
