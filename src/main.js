@@ -63,9 +63,6 @@ function setup() {
     createCanvas( CONFIG.canvasSize, CONFIG.canvasSize ); // Good for testing or for digital outputs
   }
   angleMode( DEGREES );
-
-  noFill();
-  strokeWeight( 2 ); // 16
   // End optimization
   /* /ENVIRONMENT init */
 
@@ -81,6 +78,7 @@ function setup() {
   f_branch.add(CONFIG, 'lifespan', 1, 256).step(1);
   f_branch.add(CONFIG, 'minDist', 1, 256).step(1);
   f_branch.add(CONFIG, 'maxDist', 1, 256).step(1);
+  f_branch.add(CONFIG, 'strokeWeight', 1, 256).step(1);
 
   let f_steering = gui.addFolder('Steering');
   
@@ -145,6 +143,7 @@ function initDrawing( newSeed ) {
   // Optimization when drawing only the stroke
   noFill();
   stroke( fgColor );
+  strokeWeight( CONFIG.strokeWeight ?? 2 ); // 16
 
   iterations = CONFIG.lifespan;
 

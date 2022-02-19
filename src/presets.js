@@ -231,6 +231,7 @@ const presets = {
     distortion: /* src: tree.js */Tree.distortionOptions.SINWAVE1,
     contain: true,
     bite: true,
+    strokeWeight: 3,
     colorWay: [
       "#FFFFFF",
       // "#202d95"
