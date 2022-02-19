@@ -249,9 +249,11 @@ class Tree {
       lastSegmentCount = segments.length;
       passCount++;
 
+      /*DEBUG && */ console.log(`Begin pass ${passCount}`);
+
       segments = this._simplify( segments );
 
-      /*DEBUG && */ console.log(`Simplifed segments (Pass ${passCount}): ${segments.length}`);
+      /*DEBUG && */ console.log(`Simplified segments (Pass ${passCount}): ${segments.length}`);
     } while ( lastSegmentCount !== segments.length && passCount < MAX_PASSES);
 
     segments.forEach(s => {

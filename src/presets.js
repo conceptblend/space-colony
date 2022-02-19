@@ -218,6 +218,25 @@ const presets = {
     ],
     seed: "go for it woooo",
   }, 
+  rhizomes1: {
+    description: "for minting to rhizomes",
+    lifespan: 128,
+    maxDist: 16,
+    minDist: 3,
+    branchLength: 2,
+    attractors: 5000,//25000,
+    angle: 7,
+    canvasSize: 3000,//540*2, /*540 * 2*/
+    steering: /* src: tree.js */Tree.steeringOptions.ROUNDING,
+    distortion: /* src: tree.js */Tree.distortionOptions.SINWAVE1,
+    contain: true,
+    bite: true,
+    colorWay: [
+      "#FFFFFF",
+      // "#202d95"
+    ],
+    seed: "get to the root of it",
+  }, 
 };
 
-const CONFIG = presets.lilcluster;
+const CONFIG = presets.rhizomes1;

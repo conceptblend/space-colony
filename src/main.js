@@ -48,15 +48,8 @@ let bgColor;
 let fgColor;
 
 // Parameter I/O
-let controlContainer,
-    io_angle,
-    io_branchLength,
-    io_steering,
-    io_export,
-    io_run,
-    io_runRandom,
-    io_exportNow,
-    io_useDistortion;
+let gui;
+let guiActions;
 
 /* /GLOBALS initialization */
 
@@ -76,47 +69,40 @@ function setup() {
   // End optimization
   /* /ENVIRONMENT init */
 
-  controlContainer = createDiv('');
-  controlContainer.id("controls");
+  gui = new dat.gui.GUI();
+
+  gui.remember(CONFIG);
+
+  gui.add(CONFIG, 'description');
   
-  io_angle = createInput( CONFIG.angle, 'number' );
-  io_branchLength = createInput( CONFIG.branchLength, 'number' );
-  io_export = createCheckbox( "Export when done", EXPORT );
-  io_showFlowField = createCheckbox( "Show flow field", DRAW_FLOWFIELD );
-  io_run = createButton("Run");
-  io_run.mouseClicked(e => initDrawing() );
+  let f_branch = gui.addFolder('Branch');
 
-  io_runRandom = createButton("Randomize");
-  io_runRandom.mouseClicked(e => initDrawing( Math.random() ) );
+  f_branch.add(CONFIG, 'branchLength', 1, 64).step(1);
+  f_branch.add(CONFIG, 'lifespan', 1, 256).step(1);
+  f_branch.add(CONFIG, 'minDist', 1, 256).step(1);
+  f_branch.add(CONFIG, 'maxDist', 1, 256).step(1);
 
-  io_exportNow = createButton( "Export image and config" );
-  io_exportNow.mouseClicked( e => downloadOutput() );
-
-  io_steering = createSelect();
-  io_steering.option( "No steering", Tree.steeringOptions.NONE );
-  io_steering.option( "Rounded", Tree.steeringOptions.ROUNDING );
-  io_steering.option( "Left-rounded", Tree.steeringOptions.LEFT_ROUNDING );
-  io_steering.option( "Right-rounded", Tree.steeringOptions.RIGHT_ROUNDING );
-  io_steering.selected( CONFIG.steering );
-
-  io_useDistortion = createSelect();
-  io_useDistortion.option( "No distortion", Tree.distortionOptions.NONE );
-  io_useDistortion.option( "Sine wave 1", Tree.distortionOptions.SINWAVE1 );
-  io_useDistortion.option( "Sine wave 2", Tree.distortionOptions.SINWAVE2 );
-  io_useDistortion.option( "Sine wave 3", Tree.distortionOptions.SINWAVE3 );
-  io_useDistortion.option( "Warp", Tree.distortionOptions.WARP );
-  io_useDistortion.option( "Flow", Tree.distortionOptions.FLOW );
-  io_useDistortion.selected( CONFIG.distortion ?? Tree.distortionOptions.NONE );
+  let f_steering = gui.addFolder('Steering');
   
-  controlContainer.child( io_angle );
-  controlContainer.child( io_branchLength );
-  controlContainer.child( io_steering );
-  controlContainer.child( io_useDistortion );
-  controlContainer.child( io_run );
-  controlContainer.child( io_runRandom );
-  controlContainer.child( io_exportNow );
-  controlContainer.child( io_export );
-  controlContainer.child( io_showFlowField );
+  f_steering.add(CONFIG, 'steering', Tree.steeringOptions);
+  f_steering.add(CONFIG, 'angle', 1, 180).step(1);
+
+  let f_foodSources = gui.addFolder('Food');
+  f_foodSources.add(CONFIG, 'attractors', 100, 25000).step(1);
+  f_foodSources.add(CONFIG, 'contain');
+  f_foodSources.add(CONFIG, 'bite');
+  
+  f_foodSources.add(CONFIG, 'distortion', Tree.distortionOptions);
+
+  guiActions = {
+    run: e => initDrawing(),
+    runRandom: e => initDrawing( Math.random() ),
+    export: e => downloadOutput()
+  };
+
+  gui.add(guiActions, 'run');
+  gui.add(guiActions, 'runRandom');
+  gui.add(guiActions, 'export');
 
   noLoop();
 }
@@ -134,8 +120,9 @@ function initDrawing( newSeed ) {
    * others because the first call to noise() will generate a random number but
    * subsequent calls do not. Thus, the sequence is disrupted on the first pass.
    **/
-   noiseSeed( CONFIG.seed );
-   /** /IMPORTANT */
+
+  noiseSeed( CONFIG.seed );
+  /** /IMPORTANT */
 
   const colorWay = CONFIG.colorWay ?? [
     "#4a6670ff",
@@ -173,12 +160,14 @@ function initDrawing( newSeed ) {
     // Skip if the leaf/attractor would be outside the circle
     let x = Math.floor( Math.random() * ns );
     let y = Math.floor( Math.random() * ns );
+
     let xr = x - ns * 0.5;
     let yr = y - ns * 0.5;
-    let sdfContainer = Math.sign(4*offset - Math.sqrt(xr * xr + yr * yr));
-    let sdfBite = Math.sign(Math.sqrt(xr * xr + yr * yr) - 2*offset);
-    if (sdfContainer > 0 && sdfBite > 0) {
-    // if ( sdfContainer > 0 ) {
+    let sdfContainer = CONFIG.contain ? 4*offset - Math.sqrt(xr * xr + yr * yr) : 1;
+    let sdfBite = CONFIG.bite ? Math.sqrt(xr * xr + yr * yr) - 2*offset : 1;
+
+    
+    if ( sdfContainer > 0 && sdfBite > 0 ) {
       leaves.push(new Leaf(
         createVector(offset + x, offset + y),
         weight // weight
@@ -193,16 +182,16 @@ function initDrawing( newSeed ) {
     height: CONFIG.canvasSize,
     numLeaves: CONFIG.attractors,
     leaves: leaves,
-    branchLength: parseInt( io_branchLength?.value() ) ?? CONFIG.branchLength,
+    branchLength: CONFIG.branchLength ?? CONFIG.branchLength,
     maxDist: CONFIG.maxDist,
     minDist: CONFIG.minDist,
-    angle: parseInt( io_angle?.value() ) ?? CONFIG.angle,
-    steering: parseInt( io_steering?.selected() ) ?? CONFIG.steering,
-    distortion: parseInt( io_useDistortion.selected() ) ?? Tree.distortionOptions.FLOW,
+    angle: CONFIG.angle,
+    steering: parseInt( CONFIG.steering ),
+    distortion: parseInt( CONFIG.distortion ) ?? Tree.distortionOptions.FLOW,
     /* TODO: Always generating the FluidDistortion is wasteful. Reconsider. */
     fluidDistortion: new FluidDistortion({
-      cols: 20,
-      rows: 20,
+      cols: CONFIG.canvasSize/20,
+      rows: CONFIG.canvasSize/20,
       k: 0.00085,
     })
   });
@@ -221,7 +210,7 @@ function draw() {
   if ( !isRunning ) return;
   clear();
 
-  DRAW_FLOWFIELD = io_showFlowField.checked() && ( io_useDistortion.selected() === Tree.distortionOptions.FLOW );
+  DRAW_FLOWFIELD = false; //TODO: add to dat.gui // io_showFlowField.checked() && ( io_useDistortion.selected() === Tree.distortionOptions.FLOW );
 
   if ( iterations-- > 0 && tree.leaves.length > 0 ) {
     tree.grow();
@@ -269,9 +258,6 @@ function draw() {
     tree.joinAndShow();
 
     console.log( `Runtime: ${( t_end - t_start )/1000}s` );
-    if ( io_export?.checked() ?? EXPORT ) {
-      saveImage( EXPORTMETHOD.extension );
-    }
     isRunning = false;
     noLoop();
   }
