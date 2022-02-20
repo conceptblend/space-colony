@@ -1,9 +1,12 @@
 html, body {
   margin: 0;
   padding: 0;
+  background-color: #eee;
 }
-canvas {
+canvas#defaultCanvas0 {
   display: block;
+  max-width: 800px !important;
+  max-height: 800px !important;
 }
 
 #controls input[type="text"],
