@@ -38,15 +38,14 @@ class Branch {
   }
 
   next() {
-    var nextDir = p5.Vector.mult(this.dir, this.len);
-    var nextPos = p5.Vector.add(this.pos, nextDir);
-    var nextBranch = new Branch(this, nextPos, this.dir.copy(), this.len);
-    return nextBranch;
+    const nextDir = p5.Vector.mult( this.dir, this.len );
+    const nextPos = nextDir.add( this.pos );
+    return new Branch( this, nextPos, this.dir.copy(), this.len );
   }
 
   show() {
     if ( this.parent !== null ) {
-      line(this.pos.x, this.pos.y, this.parent.pos.x, this.parent.pos.y);
+      line( this.pos.x, this.pos.y, this.parent.pos.x, this.parent.pos.y );
     }
   }
 }

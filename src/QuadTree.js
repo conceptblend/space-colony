@@ -13,8 +13,10 @@ class Rect {
     this.my = y + h / 2;
   }
   contains( node ) {
-    return (node.pos.x >= this.l && node.pos.x < this.r &&
-      node.pos.y >= this.t && node.pos.y < this.b);
+    return node.pos.x >= this.l &&
+      node.pos.x < this.r &&
+      node.pos.y >= this.t &&
+      node.pos.y < this.b;
   }
 
   intersects( range ) {
@@ -40,7 +42,7 @@ class QuadTree {
   }
 
   hasCapacity() {
-    return this.nodes.length < this.capacity;
+    return this.nodes.length < this.capacity && this.divided === false;
   }
 
   subdivide() {
@@ -128,31 +130,27 @@ class QuadTree {
   insert(node) {
     if ( !this.region.contains( node ) ) return false; // not in my region
 
-    if ( this.hasCapacity() && !this.divided ) {
+    if ( this.hasCapacity() ) {
       this.nodes.push(node);
       return true;
-    } else {
-      // subdivide and insert
-      if ( !this.divided ) {
-        let couldDivide = this.subdivide();
-
-        // If we're down to the unit cell, stop subdividing
-        if ( couldDivide ) {
-          // insert all previous nodes
-          let n = this.nodes.length;
-          for ( var p = 0; p < n; p++ ) {
-            // attempt to insert into child regions
-            this.insertIntoRegion( this.nodes.pop() );
-          }
-        } else {
-          // console.log("lost a node");
-          return false;
-        }
-      }
-      // attempt to insert into child regions
-      return this.insertIntoRegion( node );
     }
-    return false;
+
+    // subdivide and insert
+    if ( !this.divided ) {
+      let couldDivide = this.subdivide();
+
+      // If we're down to the unit cell, stop subdividing
+      if ( !couldDivide ) return false; // lost a node
+
+      // insert all previous nodes
+      let n = this.nodes.length;
+      for ( let p = 0; p < n; p++ ) {
+        // attempt to insert into child regions
+        this.insertIntoRegion( this.nodes.pop() );
+      }
+    }
+    // attempt to insert into child regions
+    return this.insertIntoRegion( node );
   }
 
   insertIntoRegion(node) {
@@ -160,6 +158,7 @@ class QuadTree {
     if ( this.subregions.ne.insert( node ) ) return true;
     if ( this.subregions.sw.insert( node ) ) return true;
     if ( this.subregions.se.insert( node ) ) return true;
+    return false;
   }
 
   print() {
@@ -185,8 +184,6 @@ class QuadTree {
     noFill();
     stroke(255);
     strokeWeight(1);
-
-    let c = quadIndex || 0;
 
     rect(this.region.x, this.region.y, this.region.w, this.region.h);
 

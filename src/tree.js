@@ -19,9 +19,6 @@ class Tree {
     FLOW: 6,
   };
 
-  get MAXDIST_3() { return this.maxDist * 3.0 };
-  get MAXDIST_3over2() { return this.MAXDIST_3 * 0.5 }
-
   constructor( options ) {
     this.angle = options?.angle ?? 120;
     this.branchLength = options?.branchLength ?? 4;
@@ -32,6 +29,9 @@ class Tree {
     this.width = options?.width ?? 400;
     this.steering = options?.steering ?? Tree.steeringOptions.LEFT_ROUNDING;
     this.seed = options?.seed ?? Math.random() * 512;
+
+    this.MAXDIST_DIAMETER = this.maxDist * 2.25;
+    this.MAXDIST_RADIUS = this.MAXDIST_DIAMETER * 0.5;
 
     this.distortion = options?.distortion ?? Tree.distortionOptions.NONE; //Tree.distortionOptions.WARP;
     this.fluidDistortion = (this.distortion === Tree.distortionOptions.FLOW) ? ( options?.fluidDistortion ?? new FluidDistortion({
@@ -51,26 +51,15 @@ class Tree {
     let nw = this.width - 2 * offset;
     let nh = this.height - 2 * offset;
 
+    // If there are no leaves provided, lets create some
     if ( this.leaves.length === 0 ) {
-      // Create some leaves
-      let weight = 0;
-
       for (let i = 0, len = this.numLeaves; i < len; i++) {
-        weight = Math.ceil( Math.random() * 10 );
         // Skip if the leaf/attractor would be inside the circle
         let x = Math.floor( Math.random() * nw );
         let y = Math.floor( Math.random() * nh );
-        // let xr = x - nw/2;
-        // let yr = y - nh/2;
-        let sdfContainer = 1;//Math.sign(4*offset - Math.sqrt(xr * xr + yr * yr));
-        // let sdfBite = 1.0;// Math.sign(Math.sqrt(xr * xr + yr * yr) - 2*offset);
-        // if (sdfContainer > 0 && sdfBite > 0) {
-        if ( sdfContainer > 0 ) {
-          this.leaves.push(new Leaf(
-            createVector(offset + x, offset + y),
-            weight // weight
-          ));
-        }
+        this.leaves.push(new Leaf(
+          createVector(offset + x, offset + y)
+        ));
       }
     }
     
@@ -84,14 +73,14 @@ class Tree {
     let current = root;
     let found = false;
 
-    while (!found) {
+    while ( !found ) {
       this.leaves.forEach(leaf => {
         let d = p5.Vector.dist(current.pos, leaf.pos);
         if (d < this.maxDist) {
           found = true;
         }
       });
-      if (!found) {
+      if ( !found ) {
         let branch = current.next();
         current = branch;
         this.qt.insert(current);
@@ -100,71 +89,83 @@ class Tree {
   }
 
   grow() {
+    /**
+     * TODO: Fix? This feels like it would be optimal to loop the branches in
+     * order to measure... but the leaves would still need to move AND the I
+     * need to remember that we're finding the closest branch. I think this
+     * might be a bad idea but will re-evaluate later.
+     */
 
     this.leaves.forEach(leaf => {
       let closestBranch = null;
       let record = this.maxDist;
       
-      // ** DISRUPT THE LEAFS/FOODSOURCE
-      if ( this.distortion !== Tree.distortionOptions.NONE ) {
-        switch ( this.distortion ) {
-          case Tree.distortionOptions.SINWAVE1:
-            leaf.pos.add(sin(0.5*leaf.pos.y), 0);
-            break;
-          case Tree.distortionOptions.SINWAVE2:
-            leaf.pos.add(sin(2*leaf.pos.y), 0);
-            break;
-          case Tree.distortionOptions.SINWAVE3:
-            leaf.pos.add(2*sin(4*leaf.pos.y), 0);
-            break;
-          case Tree.distortionOptions.WARP:
-            leaf.pos.add(sin(leaf.pos.y + this.seed), (0.5 + 0.5*cos(leaf.pos.x  + this.seed)) * 2);
-            break;
-          case Tree.distortionOptions.FLOW:
-            let xw = leaf.pos.x / width,
-                yh = leaf.pos.y / height;
-            let dir = this.fluidDistortion.getDirectionFromNormalized( xw, yh ) * 360;
-            let mag = this.fluidDistortion.getMagnitudeFromNormalized( xw, yh ) * 10;
-            leaf.pos.add( mag * Math.cos( dir ), mag * Math.sin( dir ) );
-            break;
-        }
+      // DISRUPT THE LEAFS/FOODSOURCE
+      switch ( this.distortion ) {
+        case Tree.distortionOptions.NONE:
+          break;
+        case Tree.distortionOptions.SINWAVE1:
+          leaf.pos.add(sin(0.5*leaf.pos.y), 0);
+          break;
+        case Tree.distortionOptions.SINWAVE2:
+          leaf.pos.add(sin(2*leaf.pos.y), 0);
+          break;
+        case Tree.distortionOptions.SINWAVE3:
+          leaf.pos.add(2*sin(4*leaf.pos.y), 0);
+          break;
+        case Tree.distortionOptions.WARP:
+          leaf.pos.add(sin(leaf.pos.y + this.seed), (0.5 + 0.5*cos(leaf.pos.x  + this.seed)) * 2);
+          break;
+        case Tree.distortionOptions.FLOW:
+          let xw = leaf.pos.x / width,
+              yh = leaf.pos.y / height;
+          let dir = this.fluidDistortion.getDirectionFromNormalized( xw, yh ) * 360;
+          let mag = this.fluidDistortion.getMagnitudeFromNormalized( xw, yh ) * 10;
+          leaf.pos.add( mag * Math.cos( dir ), mag * Math.sin( dir ) );
+          break;
       }
-      // **/
 
+      // Look up all of the branches within range
       let branches = this.qt.query(
         new Rect(
-          leaf.pos.x - this.MAXDIST_3over2,
-          leaf.pos.y - this.MAXDIST_3over2,
-          this.MAXDIST_3,
-          this.MAXDIST_3
+          leaf.pos.x - this.MAXDIST_RADIUS,
+          leaf.pos.y - this.MAXDIST_RADIUS,
+          this.MAXDIST_DIAMETER,
+          this.MAXDIST_DIAMETER
         )
       );
 
-      branches.forEach(branch => {
-        if (leaf.reached) return;
-        let d = p5.Vector.dist(leaf.pos, branch.pos);
+      // Find the closest branch to this leaf
+      let nn = branches.length;
+      let d = 0, branch;
+      for ( let pp = 0; pp < nn; pp++ ) {
+        branch = branches[ pp ];
+        d = leaf.pos.dist( branch.pos );
         if (d < this.minDist) {
           leaf.reached = true;
           closestBranch = null;
+          break;
         } else if (d < record) {
           closestBranch = branch;
           record = d;
         }
-      });
+      };
 
-      if (closestBranch != null) {
+      // if we found a leaf, add a force to its direction
+      if (closestBranch !== null) {
         let newDir = p5.Vector.sub(leaf.pos, closestBranch.pos);
-        closestBranch.dir.add(newDir.mult(leaf.weight).normalize());
+        closestBranch.dir.add( newDir.mult(leaf.weight).normalize() );
         closestBranch.count++;
       }
-    });
+    }); // End leaf loop
 
+    //
     // Clean up dead leaves
-    for (let i = this.leaves.length - 1; i >= 0; i--) {
-      if (this.leaves[i].reached) {
-        this.leaves.splice(i, 1);
-      }
-    }
+    //
+    // for (let i = this.leaves.length - 1; i >= 0; i--) {
+    //   this.leaves[i].reached && this.leaves.splice(i, 1);
+    // }
+    this.leaves = this.leaves.filter( l => l.reached === false );
 
     //
     // How can I traverse the whole list if it's in a QuadTree?
@@ -172,7 +173,7 @@ class Tree {
     let branches = this.qt.flatten();
     let branch;
     for (let i = branches.length - 1; i >= 0; i--) {
-      branch = branches[i];
+      branch = branches[ i ];
       if (branch.count > 0) {
         /* Average the directions based on the attractors applied */
         // branch.dir.div(branch.count + 1);
@@ -184,19 +185,20 @@ class Tree {
         // Adds gentle wobble or squiggle to the paths.
         // branch.dir.rotate(random(-15, 15));
 
-        let theta;
+        let theta,
+            alpha = branch.dir.heading();
         switch ( this.steering ) {
           case Tree.steeringOptions.LEFT_ROUNDING:
             /* OR, Round to the nearest N degrees and force left-hand turns */
-            theta = Math.floor(branch.dir.heading() / this.angle) * this.angle;
+            theta = Math.floor( alpha / this.angle ) * this.angle;
             break;
           case Tree.steeringOptions.RIGHT_ROUNDING:
             // OR, Round to the nearest N degrees and force right-hand turns
-            theta = Math.ceil(branch.dir.heading() / this.angle) * this.angle;
+            theta = Math.ceil( alpha / this.angle ) * this.angle;
             break;
           case Tree.steeringOptions.ROUNDING:
             /* OR, Round to the nearest N degrees */
-            theta = Math.round(branch.dir.heading() / this.angle) * this.angle;
+            theta = Math.round( alpha / this.angle ) * this.angle;
             break;
           case Tree.steeringOptions.NONE:
           default:
@@ -204,11 +206,10 @@ class Tree {
         }
         
         if ( theta !== undefined ) {
-          branch.dir.rotate(theta - branch.dir.heading());
+          branch.dir.rotate( theta - alpha );
         }
         
-        // console.log(theta);
-        this.qt.insert(branch.next());
+        this.qt.insert( branch.next() );
         branch.reset();
       }
     }
@@ -222,7 +223,7 @@ class Tree {
     // this.leaves.forEach(leaf => leaf.show());
     let branches = this.qt.flatten();
     
-    branches.forEach(branch => branch.show());
+    branches.forEach( branch => branch.show() );
   }
   
   /**
