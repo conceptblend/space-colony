@@ -267,7 +267,7 @@ class Tree {
   
   _dedupe( t ) {
     let visitedHash = {};
-    let trimmed = t.filter((branch) => {
+    let trimmed = t.filter( branch => {
       if (branch.parent === null) return true;
 
       let h = '';
@@ -277,12 +277,12 @@ class Tree {
        *  Applying `parseInt` to simplify hashes is probably removing nodes we actually want...
        ***/
       if (branch.pos.x < branch.parent.pos.x) {
-        h = `h${parseInt(branch.pos.x)}${parseInt(branch.pos.y)}${parseInt(branch.parent.pos.x)}${parseInt(branch.parent.pos.y)}`;
+        h = `h${ branch.pos.x.toFixed(2) }${ branch.pos.y.toFixed(2) }${ branch.parent.pos.x.toFixed(2) }${ branch.parent.pos.y.toFixed(2) }`;
       } else { //if (branch.pos.x > branch.parent.pos.x) {
-        h = `h${parseInt(branch.parent.pos.x)}${parseInt(branch.parent.pos.y)}${parseInt(branch.pos.x)}${parseInt(branch.pos.y)}`;
+        h = `h${ branch.parent.pos.x.toFixed(2) }${ branch.parent.pos.y.toFixed(2) }${ branch.pos.x.toFixed(2) }${ branch.pos.y.toFixed(2) }`;
       }
 
-      if (visitedHash.hasOwnProperty(h)) return false;
+      if ( visitedHash.hasOwnProperty( h ) ) return false;
 
       visitedHash[h] = true;
       return true;
