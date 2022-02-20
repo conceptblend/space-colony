@@ -272,10 +272,9 @@ class Tree {
 
       let h = '';
       
-      /***
-       *  WARNING
-       *  Applying `parseInt` to simplify hashes is probably removing nodes we actually want...
-       ***/
+      /**
+       * Create a hash entry representing the segment and only add uniques.
+       **/
       if (branch.pos.x < branch.parent.pos.x) {
         h = `h${ branch.pos.x.toFixed(2) }${ branch.pos.y.toFixed(2) }${ branch.parent.pos.x.toFixed(2) }${ branch.parent.pos.y.toFixed(2) }`;
       } else { //if (branch.pos.x > branch.parent.pos.x) {
