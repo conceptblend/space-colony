@@ -1,7 +1,6 @@
 // Dramatically modified but inspired by Daniel Shiffman
 // Code for: https://youtu.be/kKT0v3qhIQY
 
-const DEBUG = !true;
 class Tree {
   static steeringOptions = {
     NONE: 0x01,
@@ -83,7 +82,7 @@ class Tree {
       if ( !found ) {
         let branch = current.next();
         current = branch;
-        this.qt.insert(current);
+        this.qt.insert( current );
       }
     }
   }
@@ -236,36 +235,86 @@ class Tree {
     let branches = this.qt.flatten();
     /*DEBUG &&*/ console.log(`Full: ${branches.length}`);
     
-    let trimmed = this._dedupe(branches);
+    let trimmed = this.dedupe(branches);
     /*DEBUG &&*/ console.log(`Trimmed: ${trimmed.length}`);
+
+    const randoDraw = t => {
+      // stroke( Math.random() * 255, Math.random() * 255, Math.random() * 255, 64 );
+      stroke( 0, 0, 0, 64 );
+      t.show()
+    }
+
+    // trimmed.forEach( randoDraw );
+
     
-    let segments = this.createSegments( trimmed );
-    /*DEBUG &&*/ console.log(`Segments: ${segments.length}`);
+    // let segments = this.createSegments( trimmed );
+    // /*DEBUG &&*/ console.log(`Segments: ${segments.length}`);
 
-    const MAX_PASSES = 10;
-    let passCount = 0;
-    let lastSegmentCount = 0;
+    // const MAX_PASSES = 10;
+    // let passCount = 0;
+    // let lastSegmentCount = 0;
     
-    do {
-      lastSegmentCount = segments.length;
-      passCount++;
+    // do {
+    //   lastSegmentCount = segments.length;
+    //   passCount++;
 
-      /*DEBUG && */ console.log(`Begin pass ${passCount}`);
+    //   /*DEBUG && */ console.log(`Begin pass ${passCount}`);
 
-      segments = this._simplify( segments );
+    //   segments = this.simplify( segments );
 
-      /*DEBUG && */ console.log(`Simplified segments (Pass ${passCount}): ${segments.length}`);
-    } while ( lastSegmentCount !== segments.length && passCount < MAX_PASSES);
+    //   /*DEBUG && */ console.log(`Simplified segments (Pass ${passCount}): ${segments.length}`);
+    // } while ( lastSegmentCount !== segments.length && passCount < MAX_PASSES);
 
-    segments.forEach(s => {
-      DEBUG && stroke( s.c );
-      // TODO: Find a way to call the stored `branch.show` method instead of
-      // manually recreating it.
-      line( s.x1, s.y1, s.x2, s.y2 );
-    });
+    // segments.forEach(s => {
+    //   DEBUG && stroke( s.c );
+    //   // TODO: Find a way to call the stored `branch.show` method instead of
+    //   // manually recreating it.
+    //   stroke( Math.random() * 255, Math.random() * 255, Math.random() * 255 );
+    //   line( s.x1, s.y1, s.x2, s.y2 );
+    // });
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    /**
+     * Reverse walk up the tree and try to make longer branches
+     */
+
+     let leafNodes = trimmed.filter( b => b.isLeaf );
+     // let leafNodes = branches.filter( b => b.isLeaf );
+ 
+     // leafNodes.forEach( randoDraw );
+ 
+     let polylines = [];
+ 
+     leafNodes.forEach( l => {
+       const poly = new Polyline();
+       let node = l;
+  
+       // To rejoin with an existing path, allow the first `visited` node to
+       // be added then abort.
+       let abort = false;
+       while ( node !== null && !abort ) {
+         abort = ( node.visited === true );
+         poly.addToHead( node );
+         node.visited = true;
+         node = node.parent;
+       }
+ 
+       polylines.push( poly );
+     });
+
+    //  polylines.forEach( p => p.simplify() )
+ 
+     polylines.forEach( randoDraw );
+ 
+ 
+     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   }
   
-  _dedupe( t ) {
+  dedupe( t ) {
     let visitedHash = {};
     let trimmed = t.filter( branch => {
       if (branch.parent === null) return true;
@@ -275,10 +324,11 @@ class Tree {
       /**
        * Create a hash entry representing the segment and only add uniques.
        **/
+      const PRECISION = 1;
       if (branch.pos.x < branch.parent.pos.x) {
-        h = `h${ branch.pos.x.toFixed(2) }${ branch.pos.y.toFixed(2) }${ branch.parent.pos.x.toFixed(2) }${ branch.parent.pos.y.toFixed(2) }`;
+        h = `h${ branch.pos.x.toFixed(PRECISION) }${ branch.pos.y.toFixed(PRECISION) }${ branch.parent.pos.x.toFixed(PRECISION) }${ branch.parent.pos.y.toFixed(PRECISION) }`;
       } else { //if (branch.pos.x > branch.parent.pos.x) {
-        h = `h${ branch.parent.pos.x.toFixed(2) }${ branch.parent.pos.y.toFixed(2) }${ branch.pos.x.toFixed(2) }${ branch.pos.y.toFixed(2) }`;
+        h = `h${ branch.parent.pos.x.toFixed(PRECISION) }${ branch.parent.pos.y.toFixed(PRECISION) }${ branch.pos.x.toFixed(PRECISION) }${ branch.pos.y.toFixed(PRECISION) }`;
       }
 
       if ( visitedHash.hasOwnProperty( h ) ) return false;
@@ -292,12 +342,13 @@ class Tree {
 
 
   createSegments( t ) {
-    let branches = [...t];
+    // let branches = [...t]; // why a copy?
     let segments = [];
-    // Create all of the line segments and set the up to
-    // prefer Left-to-Right; and when both X coords are the same,
-    // prefer Top-to-Bottom.
-    branches.forEach((branch) => {
+    /**
+     * Create all of the line segments and set the up to prefer Left-to-Right;
+     * and when both X coords are the same, prefer Top-to-Bottom.
+     **/
+    t.forEach( branch => {
       let p = branch.parent;
       if (p === null) return;
       
@@ -321,13 +372,14 @@ class Tree {
     });
     return segments;
   }
-  
-  _simplify( t ) {
 
-    let segments_raw = [...t];
+  
+  simplify( t ) {
+
+    // let segments_raw = [...t]; // why copy?
     let segments_optimized = [];
 
-    segments_raw.forEach(raw => {
+    t.forEach(raw => {
       // See if we can extend an existing segment
       
       // Find same slope
@@ -403,6 +455,7 @@ class Tree {
  **/
 function nearEqual( a, b, deltaOverride ) {
   if (a === Infinity && b === Infinity ) return true;
+  if (a === -Infinity && b === -Infinity ) return true;
   const delta = deltaOverride ?? 0.025; // ≥ 0.05 introduces loss
   return Math.abs(b - a) < delta;
 }

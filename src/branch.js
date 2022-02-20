@@ -10,9 +10,17 @@ class Branch {
     this.dir = dir;
     this.origDir = this.dir.copy();
     this.count = 0;
+    this.isLeaf = true;
+    this.visited = false;
     this.len = length; // TODO: Expose this as a param and use it to vary the config
   }
   
+  get slope() {
+    if ( this.parent === null ) return null;
+
+    return (this.parent.pos.y - this.pos.y ) / ( this.parent.pos.x - this.pos.x )
+  }
+
   reset() {
     this.dir = this.origDir.copy();
     this.count = 0;
@@ -40,6 +48,7 @@ class Branch {
   next() {
     const nextDir = p5.Vector.mult( this.dir, this.len );
     const nextPos = nextDir.add( this.pos );
+    this.isLeaf = false;
     return new Branch( this, nextPos, this.dir.copy(), this.len );
   }
 
