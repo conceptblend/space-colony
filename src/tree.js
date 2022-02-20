@@ -403,6 +403,6 @@ class Tree {
  **/
 function nearEqual( a, b, deltaOverride ) {
   if (a === Infinity && b === Infinity ) return true;
-  const delta = deltaOverride ?? 0.05; // 0r 0.025?
+  const delta = deltaOverride ?? 0.025; // ≥ 0.05 introduces loss
   return Math.abs(b - a) < delta;
 }
