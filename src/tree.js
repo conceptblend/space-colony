@@ -436,7 +436,6 @@ class Tree {
 
       polylines.push( poly );
     });
-    console.log( polylines.length );
     return polylines;
   }
 
