@@ -21,10 +21,10 @@ class Polyline {
     this.vertices.push( v );
   }
   addPolylineToHead( p ) {
-    this.vertices = [ ...p.vertices, ...this.vertices ];
+    this.vertices = [ ...p.vertices.slice( 0, p.vertices.length-1 ), ...this.vertices ];
   }
   addPolylineToTail( p ) {
-    this.vertices = [ ...this.vertices, ...p.vertices ];
+    this.vertices = [ ...this.vertices, ...p.vertices.slice( 1 ) ];
   }
 
   reverse() {
@@ -57,9 +57,12 @@ class Polyline {
     //   line( this.vertices[i-1].pos.x, this.vertices[i-1].pos.y, v.pos.x, v.pos.y )
     // });
 
+    console.log( this.vertices );
+
     beginShape();
+    curveVertex( this.vertices[0].pos.x, this.vertices[0].pos.y )
     this.vertices.forEach(( v, i ) => {
-      vertex( v.pos.x, v.pos.y )
+      curveVertex( v.pos.x, v.pos.y )
       if ( CONFIG.showVertices ) {
         if ( DEBUG && ( i === 0 || i === this.vertices.length-1 )) {
           circle( v.pos.x, v.pos.y, 2 );
@@ -68,6 +71,7 @@ class Polyline {
         }
       }
     });
+    curveVertex( this.vertices[ this.vertices.length-1 ].pos.x, this.vertices[ this.vertices.length-1 ].pos.y )
     endShape();
   }
 
