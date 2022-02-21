@@ -3,6 +3,7 @@ class Segment {
     this.head = head;
     this.tail = tail;
     this.c = colour;
+    this.visited = false;
   }
   get x1() { return this.head.pos.x }
   get x2() { return this.tail.pos.x }

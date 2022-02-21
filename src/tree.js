@@ -235,7 +235,7 @@ class Tree {
     let branches = this.qt.flatten();
     /*DEBUG &&*/ console.log(`Full: ${branches.length}`);
     
-    let trimmed = this.dedupe(branches);
+    let trimmed = this.dedupe_( branches );
     /*DEBUG &&*/ console.log(`Trimmed: ${trimmed.length}`);
 
     const randoDraw = t => {
@@ -281,10 +281,30 @@ class Tree {
      * Reverse walk up the tree and try to make longer branches
      */
 
+    //  let leafNodes = [];
+    //  segments.forEach( s => {
+    //    if ( s.head.isLeaf ) leafNodes.push( s.head );
+    //    if ( s.tail.isLeaf ) leafNodes.push( s.tail );
+    //  });
+
+    /**
+     * Hella inefficient way of identifying leaf nodes....
+     * TODO: be better
+     */
+
+    let len = trimmed.length;
+    trimmed.forEach(( t, i ) => {
+      t.isLeaf = true; // optimistic assignment
+      for ( let n = 0; n < len; n++ ) {
+        if ( n !== i && trimmed[ n ].parent === t ) {
+          t.isLeaf = false;
+        }
+      }
+    });
+
+    /** END LEAF IDENT */
+     
      let leafNodes = trimmed.filter( b => b.isLeaf );
-     // let leafNodes = branches.filter( b => b.isLeaf );
- 
-     // leafNodes.forEach( randoDraw );
  
      let polylines = [];
  
@@ -305,15 +325,48 @@ class Tree {
        polylines.push( poly );
      });
 
-    //  polylines.forEach( p => p.simplify() )
- 
-     polylines.forEach( randoDraw );
+     polylines.forEach( p => {
+       p.simplify();
+       p.show();
+      });
  
  
      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   }
-  
+
+  dedupe_( branches ) {
+    let visitedHash = {};
+    for ( let n = branches.length-1; n >= 0; n-- ) {
+      let branch = branches[ n ];
+
+      if ( branch.parent === null ) continue;
+
+      let h = '';
+      
+      /**
+       * Create a hash entry representing the segment and only add uniques.
+       **/
+      const PRECISION = 2;
+      if (branch.pos.x < branch.parent.pos.x) {
+        h = `h${ branch.pos.x.toFixed(PRECISION) }-${ branch.pos.y.toFixed(PRECISION) }-${ branch.parent.pos.x.toFixed(PRECISION) }-${ branch.parent.pos.y.toFixed(PRECISION) }`;
+      } else { //if (branch.pos.x > branch.parent.pos.x) {
+        h = `h${ branch.parent.pos.x.toFixed(PRECISION) }-${ branch.parent.pos.y.toFixed(PRECISION) }-${ branch.pos.x.toFixed(PRECISION) }-${ branch.pos.y.toFixed(PRECISION) }`;
+      }
+
+      if ( visitedHash.hasOwnProperty( h ) ) {
+        branches[n].parent = null;// forget the old parent
+        branches.splice( n, 1 );
+        visitedHash[h]++;
+      } else {
+        visitedHash[h] = 1;
+      }
+
+      
+    };
+    return branches;
+  }
+
   dedupe( t ) {
     let visitedHash = {};
     let trimmed = t.filter( branch => {
@@ -339,7 +392,6 @@ class Tree {
 
     return trimmed;
   }
-
 
   createSegments( t ) {
     // let branches = [...t]; // why a copy?
@@ -373,7 +425,6 @@ class Tree {
     return segments;
   }
 
-  
   simplify( t ) {
 
     // let segments_raw = [...t]; // why copy?

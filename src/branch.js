@@ -19,6 +19,10 @@ class Branch {
     if ( this.parent === null ) return null;
 
     return (this.parent.pos.y - this.pos.y ) / ( this.parent.pos.x - this.pos.x )
+    // if ( this.pos.x < this.parent.pos.x )
+    //   return (this.parent.pos.y - this.pos.y ) / ( this.parent.pos.x - this.pos.x );
+
+    // return (this.pos.y - this.parent.pos.y ) / ( this.pos.x - this.parent.pos.x )
   }
 
   reset() {
