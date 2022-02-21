@@ -248,12 +248,12 @@ class Tree {
       segments = this.pruneSegments( segments );
       /*DEBUG &&*/ console.log(`Pruned segments: ${segments.length}`);
 
-      let polylines = this.makePolylinesFromSegments( segments );
+      let polylines = this.makePolylinesFromSegments( segments, false );
       /*DEBUG &&*/ console.log(`Polylines: ${polylines.length}`);
 
-      polylines = this.prunePolylines( polylines );
+      polylines = this.prunePolylines( polylines, false );
       // redo with reversals allowed to lengthen the lines
-      polylines = this.prunePolylines( polylines, true );
+      // polylines = this.prunePolylines( polylines, true );
 
       polylines.forEach( p => {
         p.show();
@@ -280,6 +280,8 @@ class Tree {
       passCount++;
 
       /*DEBUG && */ console.log(`Begin pass ${passCount}${ boolReversal ? ": Allow reversal" : ""}`);
+
+      polylines.sort(( b, a ) => a.head.pos.dist( a.tail.pos ) - b.head.pos.dist( b.tail.pos ) );
 
       // Loop through all of the polylines passed in
       polylines.forEach(( poly, i ) => {
@@ -335,6 +337,14 @@ class Tree {
 
   makePolylinesFromSegments( segments, boolTryTail = false ) {
     let polylines = [];
+
+    /**
+     * New sorting
+     */
+    segments.sort(( b, a ) => a.head.pos.dist( a.tail.pos ) - b.head.pos.dist( b.tail.pos ));
+    /**
+     * End sorting
+     */
     segments.forEach( s => {
       let poly,
           p = polylines.length,
@@ -475,13 +485,13 @@ class Tree {
       
       let s;
       if ( nearEqual( branch.pos.x, p.pos.x ) ) {
-        if ( branch.pos.y < p.pos.y ) {
+        if ( branch.pos.y <= p.pos.y ) {
           s = new Segment( branch, p, [255,0,0, 64] /* FOR DEBUGGING */ );
         } else {
           s = new Segment( p, branch, [255,0,0, 64] /* FOR DEBUGGING */ );
         }
       } else if ( nearEqual( branch.pos.y, p.pos.y ) ) {
-        if ( branch.pos.x < p.pos.x ) {
+        if ( branch.pos.x <= p.pos.x ) {
           s = new Segment( branch, p, [0,0,0, 64] /* FOR DEBUGGING */ );
         } else {
           s = new Segment( p, branch, [0,0,0, 64] /* FOR DEBUGGING */ );
@@ -535,11 +545,13 @@ class Tree {
         /**
          * Now compare against all of the segments matched with the same slope.
          * Depending on which end-points are touching, extend the ?? matched segment ??.
-         * For some reason, this isn't working on vertical lines.
          */
         let found = false;
         matches.forEach(m => {
           if ( found ) return;
+
+          // TODO: Evaluate is this will help during clean up
+          // if ( raw.overlapsApproximately( m ) ) return; // segments are the same
           
           if ( nearEqual( raw.x1, m.x2 ) && nearEqual( raw.y1, m.y2 ) ) {
             // Extend the optimized segment "BEFORE"
