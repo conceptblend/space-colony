@@ -64,6 +64,7 @@ function setup() {
     createCanvas( CONFIG.canvasSize, CONFIG.canvasSize ); // Good for testing or for digital outputs
   }
   angleMode( DEGREES );
+  strokeJoin( ROUND );
   // End optimization
   /* /ENVIRONMENT init */
 
@@ -80,6 +81,7 @@ function setup() {
   f_branch.add(CONFIG, 'minDist', 1, 256).step(1);
   f_branch.add(CONFIG, 'maxDist', 1, 256).step(1);
   f_branch.add(CONFIG, 'strokeWeight', 1, 256).step(1);
+  f_branch.add(CONFIG, 'showVertices');
 
   let f_steering = gui.addFolder('Steering');
   

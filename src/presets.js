@@ -237,6 +237,7 @@ const presets = {
       // "#202d95"
     ],
     seed: "get to the root of it",
+    showVertices: true,
   }, 
 };
 

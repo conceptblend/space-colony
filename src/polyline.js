@@ -1,3 +1,4 @@
+const THRESHOLD = 0.25;
 class Polyline {
   constructor( head, tail, colour ) {
     this.c = colour ?? [0,0,0];
@@ -19,21 +20,53 @@ class Polyline {
   addToTail( v ) {
     this.vertices.push( v );
   }
+  addPolylineToHead( p ) {
+    this.vertices = [ ...p.vertices, ...this.vertices ];
+  }
+  addPolylineToTail( p ) {
+    this.vertices = [ ...this.vertices, ...p.vertices ];
+  }
+
+  reverse() {
+    this.vertices.reverse();
+  }
+
+  touchesHeadApproximately( pt ) {
+    // Naive: Same direction
+    if (
+      nearEqual( this.x1, pt.x, THRESHOLD ) &&
+      nearEqual( this.y1, pt.y, THRESHOLD )
+    ) return true;
+
+    return false;
+  }
+  touchesTailApproximately( pt ) {
+    // Naive: Same direction
+    if (
+      nearEqual( this.x2, pt.x, THRESHOLD ) &&
+      nearEqual( this.y2, pt.y, THRESHOLD )
+    ) return true;
+
+    return false;
+  }
   show() {
     // let offset = ( DEBUG && this.vertices.length < 3 ) ? 4 : 0;
+    if ( DEBUG ) stroke( Math.random() * 255, Math.random() * 255, Math.random() * 255 );
+    // this.vertices.forEach(( v, i ) => {
+    //   if ( i === 0 ) return;
+    //   line( this.vertices[i-1].pos.x, this.vertices[i-1].pos.y, v.pos.x, v.pos.y )
+    // });
+
     beginShape();
     this.vertices.forEach(( v, i ) => {
-      DEBUG && push();
-      if ( DEBUG && v.slope < 0 ) stroke( "#F802C1" );
       vertex( v.pos.x, v.pos.y )
-      if ( DEBUG ) {
-        // if ( i === 0 ){ 
-        //   circle( v.pos.x, v.pos.y, 4 );
-        // } else {
+      if ( CONFIG.showVertices ) {
+        if ( DEBUG && ( i === 0 || i === this.vertices.length-1 )) {
+          circle( v.pos.x, v.pos.y, 2 );
+        } else {
           circle( v.pos.x, v.pos.y, 1 );
-        // }
+        }
       }
-      DEBUG && pop();
     });
     endShape();
   }
@@ -42,6 +75,8 @@ class Polyline {
 
     let keepList = [],
         lastNode;
+
+    const originalLength = this.vertices.length;
 
     this.vertices.forEach(( v, i ) => {
       if ( i === 0 || lastNode === undefined ) { // same situation but for clarity
@@ -61,5 +96,7 @@ class Polyline {
     }
 
     this.vertices = keepList.map( i => this.vertices[ i ]);
+
+    DEBUG && console.log( `Polyline length: ${originalLength} -> ${this.vertices.length}` );
   }
 }

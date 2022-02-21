@@ -232,110 +232,205 @@ class Tree {
    * Naively stash found segments based on a hash of the start and end points.
    **/
   joinAndShow() {
+    const USE_SEGMENTS = true;
+
     let branches = this.qt.flatten();
     /*DEBUG &&*/ console.log(`Full: ${branches.length}`);
-    
-    let trimmed = this.dedupe_( branches );
+
+    let trimmed = this.dedupe( branches );
     /*DEBUG &&*/ console.log(`Trimmed: ${trimmed.length}`);
 
-    const randoDraw = t => {
-      // stroke( Math.random() * 255, Math.random() * 255, Math.random() * 255, 64 );
-      stroke( 0, 0, 0, 64 );
-      t.show()
+    if ( USE_SEGMENTS ) {
+    
+      let segments = this.createSegments( trimmed );
+      /*DEBUG &&*/ console.log(`Segments: ${segments.length}`);
+
+      segments = this.pruneSegments( segments );
+      /*DEBUG &&*/ console.log(`Pruned segments: ${segments.length}`);
+
+      let polylines = this.makePolylinesFromSegments( segments );
+      /*DEBUG &&*/ console.log(`Polylines: ${polylines.length}`);
+
+      polylines = this.prunePolylines( polylines );
+      // redo with reversals allowed to lengthen the lines
+      polylines = this.prunePolylines( polylines, true );
+
+      polylines.forEach( p => {
+        p.show();
+      });
+
+    } else {
+      let polylines = this.makePolylines( trimmed );
+
+      polylines.forEach( p => {
+        p.simplify();
+        p.show();
+      });
     }
+  }
 
-    // trimmed.forEach( randoDraw );
-
+  prunePolylines( polylines, boolReversal = false ) {
+    const MAX_PASSES = 10;
+    let passCount = 0;
+    let lastLineCount = 0;
     
-    // let segments = this.createSegments( trimmed );
-    // /*DEBUG &&*/ console.log(`Segments: ${segments.length}`);
+    do {
+      let pruned = [];
+      lastLineCount = polylines.length;
+      passCount++;
 
-    // const MAX_PASSES = 10;
-    // let passCount = 0;
-    // let lastSegmentCount = 0;
-    
-    // do {
-    //   lastSegmentCount = segments.length;
-    //   passCount++;
+      /*DEBUG && */ console.log(`Begin pass ${passCount}${ boolReversal ? ": Allow reversal" : ""}`);
 
-    //   /*DEBUG && */ console.log(`Begin pass ${passCount}`);
+      // Loop through all of the polylines passed in
+      polylines.forEach(( poly, i ) => {
+        let prunedPoly,
+            p = pruned.length,
+            foundMatch = false;
 
-    //   segments = this.simplify( segments );
+        // Compare the polyline to all the previously pruned polylines
+        while ( --p >= 0 && !foundMatch ) {
+          prunedPoly = pruned[ p ];
+          
+          if ( prunedPoly.touchesHeadApproximately( poly.tail.pos ) ) {
+            // Head of the segment touches the tail of the polyline
+            // -> Add tail of segment to tail of polyline
+            prunedPoly.addPolylineToHead( poly );
+            foundMatch = true;
+          }
+  
+          if ( prunedPoly.touchesTailApproximately( poly.head.pos ) ) {
+            // Tail of the segment touches the head of the polyline
+            // -> Add the head of the segment to the head of polyline
+            prunedPoly.addPolylineToTail( poly );
+            foundMatch = true;
+          }
 
-    //   /*DEBUG && */ console.log(`Simplified segments (Pass ${passCount}): ${segments.length}`);
-    // } while ( lastSegmentCount !== segments.length && passCount < MAX_PASSES);
+          if ( boolReversal && prunedPoly.touchesHeadApproximately( poly.head.pos ) ) {
+            // Heads of the polylines are touching
+            // -> Reverse and add to head of polyline
+            poly.reverse();
+            prunedPoly.addPolylineToHead( poly );
+            foundMatch = true;
+          }
 
-    // segments.forEach(s => {
-    //   DEBUG && stroke( s.c );
-    //   // TODO: Find a way to call the stored `branch.show` method instead of
-    //   // manually recreating it.
-    //   stroke( Math.random() * 255, Math.random() * 255, Math.random() * 255 );
-    //   line( s.x1, s.y1, s.x2, s.y2 );
-    // });
+          if ( boolReversal && prunedPoly.touchesTailApproximately( poly.tail.pos ) ) {
+            // Tail of the segment touches the tail of the polyline
+            // -> Add head of segment to tail of polyline
+            poly.reverse();
+            prunedPoly.addPolylineToTail( poly );
+            foundMatch = true;
+          }
+        };
 
+        if ( !foundMatch ) pruned.push( poly );
+      });
 
-    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      polylines = pruned;
 
-    /**
-     * Reverse walk up the tree and try to make longer branches
-     */
+      /*DEBUG && */ console.log(`Simplified polylines (Pass ${passCount}): ${polylines.length}`);
+    } while ( lastLineCount !== polylines.length && passCount < MAX_PASSES);
 
-    //  let leafNodes = [];
-    //  segments.forEach( s => {
-    //    if ( s.head.isLeaf ) leafNodes.push( s.head );
-    //    if ( s.tail.isLeaf ) leafNodes.push( s.tail );
-    //  });
+    return polylines;
+  }
 
+  makePolylinesFromSegments( segments, boolTryTail = false ) {
+    let polylines = [];
+    segments.forEach( s => {
+      let poly,
+          p = polylines.length,
+          foundMatch = false;
+
+      while ( --p >= 0 && !foundMatch ) {
+        poly = polylines[ p ];
+        if ( s.touchesHeadApproximately( poly.head.pos ) ) {
+          // Head of the segment touches the head of the polyline
+          // -> Reverse (take tail of segment) and add to head of polyline
+          poly.addToHead( s.tail );
+          foundMatch = true;
+        }
+
+        if ( s.touchesTailApproximately( poly.head.pos ) ) {
+          // Tail of the segment touches the head of the polyline
+          // -> Add the head of the segment to the head of polyline
+          poly.addToHead( s.head );
+          foundMatch = true;
+        }
+
+        if ( boolTryTail && s.touchesHeadApproximately( poly.tail.pos ) ) {
+          // Head of the segment touches the tail of the polyline
+          // -> Add tail of segment to tail of polyline
+          poly.addToTail( s.tail );
+          foundMatch = true;
+        }
+
+        if ( boolTryTail && s.touchesTailApproximately( poly.tail.pos ) ) {
+          // Tail of the segment touches the tail of the polyline
+          // -> Add head of segment to tail of polyline
+          poly.addToTail( s.head );
+          foundMatch = true;
+        }
+      };
+
+      // didn't add to an existing Polyline so create a new one
+      if ( foundMatch ) return;
+
+      polylines.push( new Polyline( s.head, s.tail ) );
+    });
+
+    return polylines;
+  }
+
+  makePolylines( branches ) {
     /**
      * Hella inefficient way of identifying leaf nodes....
      * TODO: be better
      */
 
-    let len = trimmed.length;
-    trimmed.forEach(( t, i ) => {
+    let len = branches.length;
+    branches.forEach(( t, i ) => {
       t.isLeaf = true; // optimistic assignment
+      t.visited = false;
       for ( let n = 0; n < len; n++ ) {
-        if ( n !== i && trimmed[ n ].parent === t ) {
+        if ( n !== i && branches[ n ].parent && branches[ n ].parent.pos === t.pos ) {
           t.isLeaf = false;
         }
       }
     });
 
+    let leafNodes = branches.filter( b => b.isLeaf );
     /** END LEAF IDENT */
-     
-     let leafNodes = trimmed.filter( b => b.isLeaf );
- 
-     let polylines = [];
- 
-     leafNodes.forEach( l => {
-       const poly = new Polyline();
-       let node = l;
-  
-       // To rejoin with an existing path, allow the first `visited` node to
-       // be added then abort.
-       let abort = false;
-       while ( node !== null && !abort ) {
-         abort = ( node.visited === true );
-         poly.addToHead( node );
-         node.visited = true;
-         node = node.parent;
-       }
- 
-       polylines.push( poly );
-     });
 
-     polylines.forEach( p => {
-       p.simplify();
-       p.show();
-      });
- 
- 
-     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    let polylines = [];
+    leafNodes.forEach( l => {
+
+      const poly = new Polyline();
+      let node = l;
+
+      if( DEBUG ) {
+        push();
+        noStroke();
+        fill( 0 );
+        circle( l.pos.x, l.pos.y, 4 );
+        pop();
+      }
+
+      // To rejoin with an existing path, allow the first `visited` node to
+      // be added then abort.
+      let abort = false;
+      while ( node !== null && !abort ) {
+        abort = ( node.visited && node.parent?.visited );
+        poly.addToHead( node );
+        node.visited = true;
+        node = node.parent;
+      }
+
+      polylines.push( poly );
+    });
+    console.log( polylines.length );
+    return polylines;
   }
 
-  dedupe_( branches ) {
+  dedupe( branches ) {
     let visitedHash = {};
     for ( let n = branches.length-1; n >= 0; n-- ) {
       let branch = branches[ n ];
@@ -355,42 +450,16 @@ class Tree {
       }
 
       if ( visitedHash.hasOwnProperty( h ) ) {
-        branches[n].parent = null;// forget the old parent
+        branches[n].parent = visitedHash[h].parent;// null// forget the old parent
         branches.splice( n, 1 );
-        visitedHash[h]++;
+        // visitedHash[h]++;
       } else {
-        visitedHash[h] = 1;
+        visitedHash[h] = branches[n];
       }
 
       
     };
     return branches;
-  }
-
-  dedupe( t ) {
-    let visitedHash = {};
-    let trimmed = t.filter( branch => {
-      if (branch.parent === null) return true;
-
-      let h = '';
-      
-      /**
-       * Create a hash entry representing the segment and only add uniques.
-       **/
-      const PRECISION = 1;
-      if (branch.pos.x < branch.parent.pos.x) {
-        h = `h${ branch.pos.x.toFixed(PRECISION) }${ branch.pos.y.toFixed(PRECISION) }${ branch.parent.pos.x.toFixed(PRECISION) }${ branch.parent.pos.y.toFixed(PRECISION) }`;
-      } else { //if (branch.pos.x > branch.parent.pos.x) {
-        h = `h${ branch.parent.pos.x.toFixed(PRECISION) }${ branch.parent.pos.y.toFixed(PRECISION) }${ branch.pos.x.toFixed(PRECISION) }${ branch.pos.y.toFixed(PRECISION) }`;
-      }
-
-      if ( visitedHash.hasOwnProperty( h ) ) return false;
-
-      visitedHash[h] = true;
-      return true;
-    });
-
-    return trimmed;
   }
 
   createSegments( t ) {
@@ -422,6 +491,25 @@ class Tree {
       }
       segments.push( s );
     });
+    return segments;
+  }
+
+  pruneSegments( segments ) {
+    const MAX_PASSES = 10;
+    let passCount = 0;
+    let lastSegmentCount = 0;
+    
+    do {
+      lastSegmentCount = segments.length;
+      passCount++;
+
+      /*DEBUG && */ console.log(`Begin pass ${passCount}`);
+
+      segments = this.simplify( segments );
+
+      /*DEBUG && */ console.log(`Simplified segments (Pass ${passCount}): ${segments.length}`);
+    } while ( lastSegmentCount !== segments.length && passCount < MAX_PASSES);
+
     return segments;
   }
 
