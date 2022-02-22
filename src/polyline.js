@@ -20,9 +20,11 @@ class Polyline {
   addToTail( v ) {
     this.vertices.push( v );
   }
+
   addPolylineToHead( p ) {
     this.vertices = [ ...p.vertices.slice( 0, p.vertices.length-1 ), ...this.vertices ];
   }
+
   addPolylineToTail( p ) {
     this.vertices = [ ...this.vertices, ...p.vertices.slice( 1 ) ];
   }
@@ -50,29 +52,25 @@ class Polyline {
     return false;
   }
   show() {
-    // let offset = ( DEBUG && this.vertices.length < 3 ) ? 4 : 0;
-    if ( DEBUG ) stroke( Math.random() * 255, Math.random() * 255, Math.random() * 255 );
-    // this.vertices.forEach(( v, i ) => {
-    //   if ( i === 0 ) return;
-    //   line( this.vertices[i-1].pos.x, this.vertices[i-1].pos.y, v.pos.x, v.pos.y )
-    // });
-
-    this.vertices.forEach(( v, i ) => {
-      circle( v.pos.x, v.pos.y, 1+i );
-    });
+    DEBUG && stroke( Math.random() * 255, Math.random() * 255, Math.random() * 255 );
+    // DEBUG && this.vertices.forEach(( v, i ) => circle( v.pos.x, v.pos.y, 1+i ));
     
     beginShape();
     this.vertices.forEach(( v, i ) => {
       vertex( v.pos.x, v.pos.y )
       if ( CONFIG.showVertices ) {
-        if ( DEBUG && ( i === 0 || i === this.vertices.length-1 )) {
-          circle( v.pos.x, v.pos.y, 2 );
+        if ( DEBUG ) {
+          circle( v.pos.x, v.pos.y, 2+i )
         } else {
           circle( v.pos.x, v.pos.y, 1 );
         }
       }
     });
     endShape();
+
+    /**
+     * Curved Vertex edition (doesn't look very good)
+     */
     // beginShape();
     // curveVertex( this.vertices[0].pos.x, this.vertices[0].pos.y )
     // this.vertices.forEach(( v, i ) => {

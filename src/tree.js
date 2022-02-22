@@ -245,7 +245,7 @@ class Tree {
       let segments = this.createSegments( trimmed );
       /*DEBUG &&*/ console.log(`Segments: ${segments.length}`);
 
-      // segments = this.pruneSegments( segments );
+      segments = this.pruneSegments( segments );
       /*DEBUG &&*/ console.log(`Pruned segments: ${segments.length}`);
 
       // push();
@@ -257,15 +257,20 @@ class Tree {
       let polylines = this.makePolylinesFromSegments( segments, false );
       /*DEBUG &&*/ console.log(`Polylines: ${polylines.length}`);
 
-      polylines.forEach( p => {
-        p.inspect();
-        // p.show();
-      });
-
+      
       polylines = this.prunePolylines( polylines, false );
-      // redo with reversals allowed to lengthen the lines
-      // polylines = this.prunePolylines( polylines, true );
-
+      /**
+       * redo with reversals allowed to lengthen the lines
+       * NOTE: This is not optimal and causes some duplicates.
+       * TODO: Investigate why pruning with reversal causes this.
+       * Assumption: 
+       **/
+      polylines = this.prunePolylines( polylines, true );
+      
+      polylines.forEach( p => {
+        DEBUG && p.inspect();
+        p.show();
+      });
 
     } else {
       let polylines = this.makePolylines( trimmed );
@@ -364,7 +369,7 @@ class Tree {
           // Head of the segment touches the head of the polyline
           // -> Reverse (take tail of segment) and add to head of polyline
           poly.addToHead( s.tail );
-          DEBUG && console.log("Add tail to head")
+          // DEBUG && console.log("Add tail to head")
           foundMatch = true;
         }
 
@@ -372,7 +377,7 @@ class Tree {
           // Tail of the segment touches the head of the polyline
           // -> Add the head of the segment to the head of polyline
           poly.addToHead( s.head );
-          DEBUG && console.log("Add head to head")
+          // DEBUG && console.log("Add head to head")
           foundMatch = true;
         }
 
@@ -380,7 +385,7 @@ class Tree {
           // Head of the segment touches the tail of the polyline
           // -> Add tail of segment to tail of polyline
           poly.addToTail( s.tail );
-          DEBUG && console.log("Add tail to tail")
+          // DEBUG && console.log("Add tail to tail")
           foundMatch = true;
         }
 
@@ -388,7 +393,7 @@ class Tree {
           // Tail of the segment touches the tail of the polyline
           // -> Add head of segment to tail of polyline
           poly.addToTail( s.head );
-          DEBUG && console.log("Add head to tail")
+          // DEBUG && console.log("Add head to tail")
           foundMatch = true;
         }
       };
@@ -460,46 +465,34 @@ class Tree {
   }
 
   dedupe( branches ) {
-    let visitedHash = new Map();
+    let visitedHash = new Set();
     for ( let n = branches.length-1; n >= 0; n-- ) {
       let branch = branches[ n ];
-
       if ( branch.parent === null ) continue;
 
-      let h = '';
-      
       /**
        * Create a hash entry representing the segment and only add uniques.
        **/
-      const PRECISION = 2;
-      if (branch.pos.x < branch.parent.pos.x) {
-        h = `h${ branch.pos.x.toFixed(PRECISION) }-${ branch.pos.y.toFixed(PRECISION) }-${ branch.parent.pos.x.toFixed(PRECISION) }-${ branch.parent.pos.y.toFixed(PRECISION) }`;
-      } else { //if (branch.pos.x > branch.parent.pos.x) {
-        h = `h${ branch.parent.pos.x.toFixed(PRECISION) }-${ branch.parent.pos.y.toFixed(PRECISION) }-${ branch.pos.x.toFixed(PRECISION) }-${ branch.pos.y.toFixed(PRECISION) }`;
-      }
+      const PRECISION = 1; // Higher precision creates more issues. Use 0 or 1.
+      let a = branch.pos,
+          b = branch.parent.pos;
+
+      // Ensure `a` has the lower x value
+
+      if ( a.x >= b.x ) [ a, b ] = [ b, a ];
+
+      let h = `h${ a.x.toFixed( PRECISION ) }-${ a.y.toFixed( PRECISION ) }-${ b.x.toFixed( PRECISION ) }-${ b.y.toFixed( PRECISION ) }`;
 
       if ( visitedHash.has( h ) ) {
-        // branches[n].parent = visitedHash[h].parent;// null// forget the old parent
         branches.splice( n, 1 );
-        // visitedHash[h]++;
       } else {
-        visitedHash.set( h, branches[n] );
+        visitedHash.add( h );
       }
-      // if ( visitedHash.hasOwnProperty( h ) ) {
-      //   // branches[n].parent = visitedHash[h].parent;// null// forget the old parent
-      //   branches.splice( n, 1 );
-      //   // visitedHash[h]++;
-      // } else {
-      //   visitedHash[h] = branches[n];
-      // }
-
-      
     };
     return branches;
   }
 
   createSegments( branches ) {
-    // let branches = [...t]; // why a copy?
     let segments = [];
     /**
      * Create all of the line segments and set the up to prefer Left-to-Right;
@@ -549,12 +542,10 @@ class Tree {
     return segments;
   }
 
-  simplify( t ) {
-
-    // let segments_raw = [...t]; // why copy?
+  simplify( segments ) {
     let segments_optimized = [];
 
-    t.forEach(raw => {
+    segments.forEach(raw => {
       // See if we can extend an existing segment
       
       // Find same slope
@@ -595,9 +586,6 @@ class Tree {
         }
       }
     });
-
-    // End joining of slope friends
-    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     return segments_optimized;
   }
