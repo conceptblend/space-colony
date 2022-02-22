@@ -245,19 +245,27 @@ class Tree {
       let segments = this.createSegments( trimmed );
       /*DEBUG &&*/ console.log(`Segments: ${segments.length}`);
 
-      segments = this.pruneSegments( segments );
+      // segments = this.pruneSegments( segments );
       /*DEBUG &&*/ console.log(`Pruned segments: ${segments.length}`);
+
+      // push();
+      // strokeWeight( 8 );
+      // stroke( "#00000044");
+      // segments.forEach( s => s.show() );
+      // pop();
 
       let polylines = this.makePolylinesFromSegments( segments, false );
       /*DEBUG &&*/ console.log(`Polylines: ${polylines.length}`);
+
+      polylines.forEach( p => {
+        p.inspect();
+        // p.show();
+      });
 
       polylines = this.prunePolylines( polylines, false );
       // redo with reversals allowed to lengthen the lines
       // polylines = this.prunePolylines( polylines, true );
 
-      polylines.forEach( p => {
-        p.show();
-      });
 
     } else {
       let polylines = this.makePolylines( trimmed );
@@ -281,7 +289,7 @@ class Tree {
 
       /*DEBUG && */ console.log(`Begin pass ${passCount}${ boolReversal ? ": Allow reversal" : ""}`);
 
-      polylines.sort(( b, a ) => a.head.pos.dist( a.tail.pos ) - b.head.pos.dist( b.tail.pos ) );
+      // polylines.sort(( a, b ) => a.head.pos.dist( a.tail.pos ) - b.head.pos.dist( b.tail.pos ) );
 
       // Loop through all of the polylines passed in
       polylines.forEach(( poly, i ) => {
@@ -341,7 +349,7 @@ class Tree {
     /**
      * New sorting
      */
-    segments.sort(( b, a ) => a.head.pos.dist( a.tail.pos ) - b.head.pos.dist( b.tail.pos ));
+    // segments.sort(( a, b ) => a.head.pos.dist( a.tail.pos ) - b.head.pos.dist( b.tail.pos ));
     /**
      * End sorting
      */
@@ -352,39 +360,51 @@ class Tree {
 
       while ( --p >= 0 && !foundMatch ) {
         poly = polylines[ p ];
-        if ( s.touchesHeadApproximately( poly.head.pos ) ) {
+        if ( !foundMatch && s.touchesHeadApproximately( poly.head.pos ) ) {
           // Head of the segment touches the head of the polyline
           // -> Reverse (take tail of segment) and add to head of polyline
           poly.addToHead( s.tail );
+          DEBUG && console.log("Add tail to head")
           foundMatch = true;
         }
 
-        if ( s.touchesTailApproximately( poly.head.pos ) ) {
+        if ( !foundMatch && s.touchesTailApproximately( poly.head.pos ) ) {
           // Tail of the segment touches the head of the polyline
           // -> Add the head of the segment to the head of polyline
           poly.addToHead( s.head );
+          DEBUG && console.log("Add head to head")
           foundMatch = true;
         }
 
-        if ( boolTryTail && s.touchesHeadApproximately( poly.tail.pos ) ) {
+        if ( !foundMatch && boolTryTail && s.touchesHeadApproximately( poly.tail.pos ) ) {
           // Head of the segment touches the tail of the polyline
           // -> Add tail of segment to tail of polyline
           poly.addToTail( s.tail );
+          DEBUG && console.log("Add tail to tail")
           foundMatch = true;
         }
 
-        if ( boolTryTail && s.touchesTailApproximately( poly.tail.pos ) ) {
+        if ( !foundMatch && boolTryTail && s.touchesTailApproximately( poly.tail.pos ) ) {
           // Tail of the segment touches the tail of the polyline
           // -> Add head of segment to tail of polyline
           poly.addToTail( s.head );
+          DEBUG && console.log("Add head to tail")
           foundMatch = true;
         }
       };
 
       // didn't add to an existing Polyline so create a new one
-      if ( foundMatch ) return;
+      if ( foundMatch ) {
+        if ( DEBUG && poly.inspect() ) {
+          console.log("Offending segment:")
+          console.log( s.head.pos );
+          console.log( s.tail.pos );
+        }
+        return;
+      }
 
       polylines.push( new Polyline( s.head, s.tail ) );
+
     });
 
     return polylines;
@@ -440,7 +460,7 @@ class Tree {
   }
 
   dedupe( branches ) {
-    let visitedHash = {};
+    let visitedHash = new Map();
     for ( let n = branches.length-1; n >= 0; n-- ) {
       let branch = branches[ n ];
 
@@ -458,27 +478,34 @@ class Tree {
         h = `h${ branch.parent.pos.x.toFixed(PRECISION) }-${ branch.parent.pos.y.toFixed(PRECISION) }-${ branch.pos.x.toFixed(PRECISION) }-${ branch.pos.y.toFixed(PRECISION) }`;
       }
 
-      if ( visitedHash.hasOwnProperty( h ) ) {
-        branches[n].parent = visitedHash[h].parent;// null// forget the old parent
+      if ( visitedHash.has( h ) ) {
+        // branches[n].parent = visitedHash[h].parent;// null// forget the old parent
         branches.splice( n, 1 );
         // visitedHash[h]++;
       } else {
-        visitedHash[h] = branches[n];
+        visitedHash.set( h, branches[n] );
       }
+      // if ( visitedHash.hasOwnProperty( h ) ) {
+      //   // branches[n].parent = visitedHash[h].parent;// null// forget the old parent
+      //   branches.splice( n, 1 );
+      //   // visitedHash[h]++;
+      // } else {
+      //   visitedHash[h] = branches[n];
+      // }
 
       
     };
     return branches;
   }
 
-  createSegments( t ) {
+  createSegments( branches ) {
     // let branches = [...t]; // why a copy?
     let segments = [];
     /**
      * Create all of the line segments and set the up to prefer Left-to-Right;
      * and when both X coords are the same, prefer Top-to-Bottom.
      **/
-    t.forEach( branch => {
+    branches.forEach( branch => {
       let p = branch.parent;
       if (p === null) return;
       
@@ -571,8 +598,6 @@ class Tree {
 
     // End joining of slope friends
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    // Begin linking and optimization of branches
-    // TODO
 
     return segments_optimized;
   }
@@ -597,15 +622,4 @@ class Tree {
       } : null
     }
   }
-}
-
-/**
- * return TRUE if a is within delta of b
- * return FALSE otherwise
- **/
-function nearEqual( a, b, deltaOverride ) {
-  if (a === Infinity && b === Infinity ) return true;
-  if (a === -Infinity && b === -Infinity ) return true;
-  const delta = deltaOverride ?? 0.025; // ≥ 0.05 introduces loss
-  return Math.abs(b - a) < delta;
 }
