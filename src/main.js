@@ -5,10 +5,8 @@
 // http://patreon.com/codingtrain
 // https://youtu.be/kKT0v3qhIQY
 
-// Runtime: 8.7s @ l:200, max:64, min:16, canvas:1080,count:5000
-// Runtime: 28.4s @ l:200, max:64, min:16, canvas:1080,count:25000
 
-const DEBUG = true;
+const DEBUG = !true;
 const SHOWINPROGESS = true;
 let DRAW_FLOWFIELD = !true;
 
