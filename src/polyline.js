@@ -1,5 +1,45 @@
 const THRESHOLD = 0.25;
 class Polyline {
+
+  static drawPolyline( vertices ) {
+    beginShape();
+    vertices.forEach(( v, i ) => {
+      vertex( v.pos.x, v.pos.y )
+      if ( CONFIG.showVertices ) {
+        if ( DEBUG ) {
+          circle( v.pos.x, v.pos.y, 2+i )
+        } else {
+          circle( v.pos.x, v.pos.y, 1 );
+        }
+      }
+    });
+    endShape();
+  }
+
+  static drawPolylineKnuckles( vertices ) {
+    beginShape();
+    vertices.forEach(( v, i ) => {
+      vertex( v.pos.x, v.pos.y )
+      if ( CONFIG.showVertices ) {
+        push();
+        fill( 0 );
+        circle( v.pos.x, v.pos.y, i )
+        pop();
+      }
+    });
+    endShape();
+  }
+  static drawPolyVertices( vertices ) {
+    vertices.forEach(( v, i ) => {
+      push();
+      fill( 0 );
+      noStroke();
+      circle( v.pos.x, v.pos.y, i )
+      pop();
+    });
+  }
+
+
   constructor( head, tail, colour ) {
     this.c = colour ?? [0,0,0];
     this.vertices = [];
@@ -55,18 +95,9 @@ class Polyline {
     DEBUG && stroke( Math.random() * 255, Math.random() * 255, Math.random() * 255 );
     // DEBUG && this.vertices.forEach(( v, i ) => circle( v.pos.x, v.pos.y, 1+i ));
     
-    beginShape();
-    this.vertices.forEach(( v, i ) => {
-      vertex( v.pos.x, v.pos.y )
-      if ( CONFIG.showVertices ) {
-        if ( DEBUG ) {
-          circle( v.pos.x, v.pos.y, 2+i )
-        } else {
-          circle( v.pos.x, v.pos.y, 1 );
-        }
-      }
-    });
-    endShape();
+    Polyline.drawPolyline( this.vertices );
+    // Polyline.drawPolylineKnuckles( this.vertices );
+    // Polyline.drawPolyVertices( this.vertices );
 
     /**
      * Curved Vertex edition (doesn't look very good)
