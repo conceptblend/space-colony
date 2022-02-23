@@ -38,7 +38,35 @@ class Polyline {
       pop();
     });
   }
+  static drawPolyBlobVertices( vertices ) {
+    const blob = ( x, y, r ) => {
+      const A = 3;
+      const steps = 12;
+      const angleIncrement = 360 / steps;
+      let blobPoints = [];
+      for ( let n=0; n<steps; n++ ) {
+        let angle = n * angleIncrement * Math.PI / 180;
+        blobPoints.push({
+          x: x + Math.cos( angle ) * ( r + Math.random() ),
+          y: y + Math.sin( angle ) * ( r + Math.random() )
+        });
+      }
 
+      beginShape();
+      curveVertex( blobPoints[0].x, blobPoints[0].y );
+      blobPoints.forEach( b => curveVertex( b.x, b.y ) );
+      curveVertex( blobPoints[0].x, blobPoints[0].y );
+      curveVertex( blobPoints[1].x, blobPoints[1].y );
+      endShape();
+    }
+    vertices.forEach(( v, i ) => {
+      push();
+      fill( 0 );
+      noStroke();
+      blob( v.pos.x, v.pos.y, i+1 );
+      pop();
+    });
+  }
 
   constructor( head, tail, colour ) {
     this.c = colour ?? [0,0,0];
@@ -98,24 +126,8 @@ class Polyline {
     Polyline.drawPolyline( this.vertices );
     // Polyline.drawPolylineKnuckles( this.vertices );
     // Polyline.drawPolyVertices( this.vertices );
+    Polyline.drawPolyBlobVertices( this.vertices );
 
-    /**
-     * Curved Vertex edition (doesn't look very good)
-     */
-    // beginShape();
-    // curveVertex( this.vertices[0].pos.x, this.vertices[0].pos.y )
-    // this.vertices.forEach(( v, i ) => {
-    //   curveVertex( v.pos.x, v.pos.y )
-    //   if ( CONFIG.showVertices ) {
-    //     if ( DEBUG && ( i === 0 || i === this.vertices.length-1 )) {
-    //       circle( v.pos.x, v.pos.y, 2 );
-    //     } else {
-    //       circle( v.pos.x, v.pos.y, 1 );
-    //     }
-    //   }
-    // });
-    // curveVertex( this.vertices[ this.vertices.length-1 ].pos.x, this.vertices[ this.vertices.length-1 ].pos.y )
-    // endShape();
   }
 
   simplify() {
