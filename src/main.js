@@ -93,15 +93,15 @@ function setup() {
   f_branch.add(CONFIG, 'minDist', 1, 256).step(1);
   f_branch.add(CONFIG, 'maxDist', 1, 256).step(1);
 
-  let f_style = gui.addFolder('Style');
-  f_style.add(CONFIG, 'strokeWeight', 1, 256).step(1);
-  f_style.add(CONFIG, 'showVertices');
-  f_style.add(CONFIG, 'fnShow', Polyline.drawingOptions);
-
   let f_steering = gui.addFolder('Steering');
   
   f_steering.add(CONFIG, 'steering', Tree.steeringOptions);
   f_steering.add(CONFIG, 'angle', 1, 180).step(1);
+
+  let f_style = gui.addFolder('Style');
+  f_style.add(CONFIG, 'fnShow', Polyline.drawingOptions);
+  f_style.add(CONFIG, 'showVertices');
+  f_style.add(CONFIG, 'strokeWeight', 1, 256).step(1);
 
   let f_foodSources = gui.addFolder('Food');
   f_foodSources.add(CONFIG, 'attractors', 100, 25000).step(1);
@@ -304,9 +304,18 @@ function saveImage( ext = 'png' ) {
 }
 
 function saveConfig() {
-  let cfg = tree.currentConfig();
-  cfg.lifespan = CONFIG.lifespan;
-  cfg.seed = CONFIG.seed;
+  let cfg = Object.assign( {}, CONFIG );
+
+  // Coerce the HEX values back to INTs so they don't end up a strings
+  // TODO: SHould probably avoid creating enums using HEX values in the future,
+  cfg.steering = Number.parseInt( cfg.steering );
+  cfg.distortion = Number.parseInt( cfg.distortion );
+  cfg.fnShow = Number.parseInt( cfg.fnShow );
+
+  // Extend with the fluid distorting settings just in case
+  cfg.meta = {
+    fluidDistortion: ( tree.currentConfig() ).fluidDistortion,
+  };
   saveJSON( cfg, `${getName()}-config.json` );
 }
 
