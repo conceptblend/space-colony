@@ -28,6 +28,7 @@ class Tree {
     this.width = options?.width ?? 400;
     this.steering = options?.steering ?? Tree.steeringOptions.LEFT_ROUNDING;
     this.seed = options?.seed ?? Math.random() * 512;
+    this.fnShow = options?.fnShow ?? Polyline.drawPolyline;
 
     this.MAXDIST_DIAMETER = this.maxDist * 2.25;
     this.MAXDIST_RADIUS = this.MAXDIST_DIAMETER * 0.5;
@@ -248,19 +249,13 @@ class Tree {
       segments = this.pruneSegments( segments );
       /*DEBUG &&*/ console.log(`Pruned segments: ${segments.length}`);
 
-      // push();
-      // strokeWeight( 8 );
-      // stroke( "#00000044");
-      // segments.forEach( s => s.show() );
-      // pop();
-
       let polylines = this.makePolylinesFromSegments( segments, false );
       /*DEBUG &&*/ console.log(`Polylines: ${polylines.length}`);
 
       
       polylines = this.prunePolylines( polylines, false );
       /**
-       * redo with reversals allowed to lengthen the lines
+       * Allow reversals on the next pass to try and lengthen the lines
        * NOTE: This is not optimal and causes some duplicates.
        * TODO: Investigate why pruning with reversal causes this.
        * Assumption: 
@@ -269,6 +264,10 @@ class Tree {
       
       polylines.forEach( p => {
         DEBUG && p.inspect();
+        // late set the fnShow for rendering....
+        // p.fnShow = v => { Polyline.drawPolyline( v ); Polyline.drawPolyBlobVerticesTranslucent( v ); };
+        p.fnShow = this.fnShow;
+        // show it
         p.show();
       });
 

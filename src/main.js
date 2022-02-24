@@ -77,6 +77,9 @@ function setup() {
   // End optimization
   /* /ENVIRONMENT init */
 
+  // Give the CONFIG a default drawing function
+  if ( undefined === CONFIG.fnShow ) CONFIG.fnShow = Polyline.drawingOptions.line;
+
   gui = new dat.gui.GUI();
 
   gui.remember(CONFIG);
@@ -89,8 +92,11 @@ function setup() {
   f_branch.add(CONFIG, 'lifespan', 1, 256).step(1);
   f_branch.add(CONFIG, 'minDist', 1, 256).step(1);
   f_branch.add(CONFIG, 'maxDist', 1, 256).step(1);
-  f_branch.add(CONFIG, 'strokeWeight', 1, 256).step(1);
-  f_branch.add(CONFIG, 'showVertices');
+
+  let f_style = gui.addFolder('Style');
+  f_style.add(CONFIG, 'strokeWeight', 1, 256).step(1);
+  f_style.add(CONFIG, 'showVertices');
+  f_style.add(CONFIG, 'fnShow', Polyline.drawingOptions);
 
   let f_steering = gui.addFolder('Steering');
   
@@ -204,7 +210,14 @@ function initDrawing( newSeed ) {
       cols: CONFIG.canvasSize/20,
       rows: CONFIG.canvasSize/20,
       k: 0.00085,
-    })
+    }),
+    fnShow: v => {
+      ( CONFIG.fnShow & Polyline.drawingOptions.line ) && Polyline.drawPolyline( v );
+      ( CONFIG.fnShow & Polyline.drawingOptions.knuckles ) && Polyline.drawPolylineKnuckles( v );
+      ( CONFIG.fnShow & Polyline.drawingOptions.vertices ) && Polyline.drawPolyVertices( v );
+      ( CONFIG.fnShow & Polyline.drawingOptions.blobVerts ) && Polyline.drawPolyBlobVertices( v );
+      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsTranslucent ) && Polyline.drawPolyBlobVerticesTranslucent( v );
+    }
   });
 
   
