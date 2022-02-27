@@ -253,12 +253,8 @@ const presets = {
     contain: true,
     bite: true,
     strokeWeight: 3,
-    // colorWay: [
-    //   // "#FFFFFF",
-    //   "#202d95"
-    // ],
+    colorWay: [ "#F2EACB" ],
     seed: "get to the root of it",
-    showVertices: true,
   }, 
 };
 
