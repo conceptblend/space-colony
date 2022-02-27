@@ -155,7 +155,7 @@ function initDrawing( newSeed ) {
   const getColorWay = () => colorWay[ Math.floor( Math.random() * colorWay.length ) ];
 
   bgColor = color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
-  fgColor = color( "#523333" );; //color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
+  fgColor = color( 0 ); //color( "#523333" );; //color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
 
   background( bgColor );
   // Optimization when drawing only the stroke
