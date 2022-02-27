@@ -68,6 +68,33 @@ const enumContainOptions = {
   DOME: 4,
 }
 
+const sdfCircle = ( x, y, cx, cy, r ) => {
+  const dx = x - cx;
+  const dy = y - cy;
+
+  return r - Math.sqrt( dx * dx + dy * dy );
+}
+
+// r=radius, h=height
+const sdfCutDisk = ( x, y, cx, cy, r, h ) => {
+  // Modified from Inigo Quilez: https://www.shadertoy.com/view/ftVXRc
+
+  const w = Math.sqrt( r*r - h*h ); // constant for a given shape
+
+  const dx = Math.abs( x - cx );
+  const dy = cy - y; // inverted to create a bush
+
+  // select circle or segment
+  const s = Math.max( ( h-r )* dx * dx + w * w * ( h + r - 2.0 * dy ), h * dx - w * dy );
+
+  const dx2 = dx - w;
+  const dy2 = dy - h;
+
+  return -1 * ( (s < 0.0) ? Math.sqrt( dx*dx + dy*dy ) - r :        // circle
+          (dx < w) ? h - dy     :        // segment line
+          Math.sqrt( dx2*dx2 + dy2*dy2 )); // segment corner
+}
+
 /* /GLOBALS initialization */
 
 function setup() {
@@ -179,44 +206,12 @@ function initDrawing( newSeed ) {
 
   let leaves = [];
   let weight = 0;
-  let offset = CONFIG.canvasSize * 0.1;
-  let ns = CONFIG.canvasSize - 2 * offset;
+  const offset = CONFIG.canvasSize * 0.1;
+  const ns = CONFIG.canvasSize - 2 * offset;
+  const cx = ns * 0.5;
+  const cy = ns * 0.5;
 
-  const sdfCenteredCircle = ( x, y ) => {
-    const dx = x - ns * 0.5;
-    const dy = y - ns * 0.5;
-
-    return 4*offset - Math.sqrt( dx * dx + dy * dy );
-  }
-
-  const sdfCircle = ( x, y, cx, cy, r ) => {
-    const dx = x - cx;
-    const dy = y - cy;
-
-    return r - Math.sqrt( dx * dx + dy * dy );
-  }
-
-// r=radius, h=height
-const sdfCutDisk = ( x, y, cx, cy, r, h ) => {
-  // Modified from Inigo Quilez: https://www.shadertoy.com/view/ftVXRc
-  
-  const w = Math.sqrt( r*r - h*h ); // constant for a given shape
-  
-  const dx = Math.abs( x - cx );
-  const dy = cy - y; // inverted to create a bush
-  
-  // select circle or segment
-  const s = Math.max( ( h-r )* dx * dx + w * w * ( h + r - 2.0 * dy ), h * dx - w * dy );
-
-  const dx2 = dx - w;
-  const dy2 = dy - h;
-
-  return -1 * ( (s < 0.0) ? Math.sqrt( dx*dx + dy*dy ) - r :        // circle
-          (dx < w) ? h - dy     :        // segment line
-          Math.sqrt( dx2*dx2 + dy2*dy2 )); // segment corner
-}
-
-  
+ 
   for (var i = 0, len = CONFIG.attractors; i < len; i++) {
     weight = Math.ceil( Math.random() * 10 );
     // Skip if the leaf/attractor would be outside the circle
@@ -231,22 +226,20 @@ const sdfCutDisk = ( x, y, cx, cy, r, h ) => {
           break; // seems dumb to have this option... but it's for back compat
         case enumContainOptions.UNIONED_CIRCLES:
           // Two circles, unioned at the center
-          sdfContainer = sdfCircle( x, y, ns * 0.5, ns * 0.1, 4*offset ) > 0 || sdfCircle( x, y, ns * 0.5, ns * 0.9, 4*offset ) > 0 ? 1 : -1;
+          sdfContainer = sdfCircle( x, y, cx, ns * 0.1, 4*offset ) > 0 || sdfCircle( x, y, cx, ns * 0.9, 4*offset ) > 0 ? 1 : -1;
           break;
         case enumContainOptions.DOME:
           // A dome-shaped cut disk nearly centered at the canvas midpoints
-          sdfContainer = sdfCutDisk( x, y, ns * 0.5, ns * 0.65, 4*offset, -offset );
+          sdfContainer = sdfCutDisk( x, y, cx, ns * 0.65, 4*offset, -offset );
           break;
         case enumContainOptions.CENTERED_CIRCLE:
         default:
-          sdfContainer = sdfCenteredCircle( x, y );
+          sdfContainer = sdfCircle( x, y, cx, cy, 4*offset );
           break;
       }
     }
 
-    const xr = x - ns * 0.5;
-    const yr = y - ns * 0.5;
-    const sdfBite = CONFIG.bite ? Math.sqrt(xr * xr + yr * yr) - 2*offset : 1;
+    const sdfBite = CONFIG.bite ? sdfCircle( x, y, cx, cy, 2*offset ) : 1;
     
     if ( sdfContainer > 0 && sdfBite > 0 ) {
       leaves.push(new Leaf(
