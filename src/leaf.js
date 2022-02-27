@@ -13,8 +13,10 @@ class Leaf {
   }
 
   show() {
-    stroke(0, 14, 32);
+    push();
+    stroke( 0 );
     noFill();
-    circle( this.pos.x, this.pos.y, this.weight * 0.01 );
+    circle( this.pos.x, this.pos.y, 3 );
+    pop();
   }
 }
