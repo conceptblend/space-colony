@@ -238,7 +238,7 @@ function initDrawing( newSeed ) {
       }
     }
 
-    const sdfBite = CONFIG.bite ? sdfCircle( x, y, cx, cy, 2*offset ) : 1;
+    const sdfBite = CONFIG.bite ? -sdfCircle( x, y, cx, cy, 2*offset ) : 1;
     
     if ( sdfContainer > 0 && sdfBite > 0 ) {
       attractors.push(new Attractor(
