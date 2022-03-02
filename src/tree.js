@@ -22,7 +22,7 @@ class Tree {
     this.angle = options?.angle ?? 120;
     this.branchLength = options?.branchLength ?? 4;
     this.height = options?.height ?? 400;
-    this.numLeaves = options?.numLeaves ?? 500;
+    this.numAttractors = options?.numAttractors ?? 500;
     this.maxDist = options?.maxDist ?? 96;
     this.minDist = options?.minDist ?? 24;
     this.width = options?.width ?? 400;
@@ -41,7 +41,7 @@ class Tree {
     }) ) : null;
 
     this.qt = new QuadTree(new Rect(0, 0, this.width, this.height), 4);
-    this.leaves = options?.leaves ?? [];
+    this.attractors = options?.attractors ?? [];
 
     this.setup();
   }
@@ -51,13 +51,13 @@ class Tree {
     let nw = this.width - 2 * offset;
     let nh = this.height - 2 * offset;
 
-    // If there are no leaves provided, lets create some
-    if ( this.leaves.length === 0 ) {
-      for (let i = 0, len = this.numLeaves; i < len; i++) {
-        // Skip if the leaf/attractor would be inside the circle
+    // If there are no attractors provided, lets create some
+    if ( this.attractors.length === 0 ) {
+      for (let i = 0, len = this.numAttractors; i < len; i++) {
+        // Skip if the attractor would be inside the circle
         let x = Math.floor( Math.random() * nw );
         let y = Math.floor( Math.random() * nh );
-        this.leaves.push(new Leaf(
+        this.attractors.push(new Attractor(
           createVector(offset + x, offset + y)
         ));
       }
@@ -74,8 +74,8 @@ class Tree {
     let found = false;
 
     while ( !found ) {
-      this.leaves.forEach(leaf => {
-        let d = p5.Vector.dist(current.pos, leaf.pos);
+      this.attractors.forEach(attractor => {
+        let d = p5.Vector.dist(current.pos, attractor.pos);
         if (d < this.maxDist) {
           found = true;
         }
@@ -91,12 +91,12 @@ class Tree {
   grow() {
     /**
      * TODO: Fix? This feels like it would be optimal to loop the branches in
-     * order to measure... but the leaves would still need to move AND the I
+     * order to measure... but the attractors would still need to move AND the I
      * need to remember that we're finding the closest branch. I think this
      * might be a bad idea but will re-evaluate later.
      */
 
-    this.leaves.forEach(leaf => {
+    this.attractors.forEach(attractor => {
       let closestBranch = null;
       let record = this.maxDist;
       
@@ -105,44 +105,44 @@ class Tree {
         case Tree.distortionOptions.NONE:
           break;
         case Tree.distortionOptions.SINWAVE1:
-          leaf.pos.add(sin(0.5*leaf.pos.y), 0);
+          attractor.pos.add(sin(0.5*attractor.pos.y), 0);
           break;
         case Tree.distortionOptions.SINWAVE2:
-          leaf.pos.add(sin(2*leaf.pos.y), 0);
+          attractor.pos.add(sin(2*attractor.pos.y), 0);
           break;
         case Tree.distortionOptions.SINWAVE3:
-          leaf.pos.add(2*sin(4*leaf.pos.y), 0);
+          attractor.pos.add(2*sin(4*attractor.pos.y), 0);
           break;
         case Tree.distortionOptions.WARP:
-          leaf.pos.add(sin(leaf.pos.y + this.seed), (0.5 + 0.5*cos(leaf.pos.x  + this.seed)) * 2);
+          attractor.pos.add(sin(attractor.pos.y + this.seed), (0.5 + 0.5*cos(attractor.pos.x  + this.seed)) * 2);
           break;
         case Tree.distortionOptions.FLOW:
-          let xw = leaf.pos.x / width,
-              yh = leaf.pos.y / height;
+          let xw = attractor.pos.x / width,
+              yh = attractor.pos.y / height;
           let dir = this.fluidDistortion.getDirectionFromNormalized( xw, yh ) * 360;
           let mag = this.fluidDistortion.getMagnitudeFromNormalized( xw, yh ) * 10;
-          leaf.pos.add( mag * Math.cos( dir ), mag * Math.sin( dir ) );
+          attractor.pos.add( mag * Math.cos( dir ), mag * Math.sin( dir ) );
           break;
       }
 
       // Look up all of the branches within range
       let branches = this.qt.query(
         new Rect(
-          leaf.pos.x - this.MAXDIST_RADIUS,
-          leaf.pos.y - this.MAXDIST_RADIUS,
+          attractor.pos.x - this.MAXDIST_RADIUS,
+          attractor.pos.y - this.MAXDIST_RADIUS,
           this.MAXDIST_DIAMETER,
           this.MAXDIST_DIAMETER
         )
       );
 
-      // Find the closest branch to this leaf
+      // Find the closest branch to this attractor
       let nn = branches.length;
       let d = 0, branch;
       for ( let pp = 0; pp < nn; pp++ ) {
         branch = branches[ pp ];
-        d = leaf.pos.dist( branch.pos );
+        d = attractor.pos.dist( branch.pos );
         if (d < this.minDist) {
-          leaf.reached = true;
+          attractor.reached = true;
           closestBranch = null;
           break;
         } else if (d < record) {
@@ -151,21 +151,21 @@ class Tree {
         }
       };
 
-      // if we found a leaf, add a force to its direction
+      // if we found a attractor, add a force to its direction
       if (closestBranch !== null) {
-        let newDir = p5.Vector.sub(leaf.pos, closestBranch.pos);
-        closestBranch.dir.add( newDir.mult(leaf.weight).normalize() );
+        let newDir = p5.Vector.sub(attractor.pos, closestBranch.pos);
+        closestBranch.dir.add( newDir.mult(attractor.weight).normalize() );
         closestBranch.count++;
       }
-    }); // End leaf loop
+    }); // End attractor loop
 
     //
-    // Clean up dead leaves
+    // Clean up dead attractors
     //
-    // for (let i = this.leaves.length - 1; i >= 0; i--) {
-    //   this.leaves[i].reached && this.leaves.splice(i, 1);
+    // for (let i = this.attractors.length - 1; i >= 0; i--) {
+    //   this.attractors[i].reached && this.attractors.splice(i, 1);
     // }
-    this.leaves = this.leaves.filter( l => l.reached === false );
+    this.attractors = this.attractors.filter( l => l.reached === false );
 
     //
     // How can I traverse the whole list if it's in a QuadTree?
@@ -220,7 +220,7 @@ class Tree {
   }
   
   show() {
-    // this.leaves.forEach(leaf => leaf.show());
+    // this.attractors.forEach(attractor => attractor.show());
     let branches = this.qt.flatten();
     
     branches.forEach( branch => branch.show() );
@@ -416,7 +416,7 @@ class Tree {
 
   makePolylines( branches ) {
     /**
-     * Hella inefficient way of identifying leaf nodes....
+     * Hella inefficient way of identifying attractor nodes....
      * TODO: be better
      */
 
@@ -595,8 +595,7 @@ class Tree {
       branchLength: this.branchLength,
       canvasSize: this.width === this.height ? this.width : -1,
       height: this.height,
-      attractors: this.numLeaves,
-      numLeaves: this.numLeaves,
+      attractors: this.numAttractors,
       maxDist: this.maxDist,
       minDist: this.minDist,
       width: this.width,

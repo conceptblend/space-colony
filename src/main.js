@@ -139,13 +139,12 @@ function setup() {
   f_style.add(CONFIG, 'showVertices');
   f_style.add(CONFIG, 'strokeWeight', 1, 256).step(1);
 
-  let f_foodSources = gui.addFolder('Food');
-  f_foodSources.add(CONFIG, 'attractors', 100, 25000).step(1);
-  f_foodSources.add(CONFIG, 'contain');
-  f_foodSources.add(CONFIG, 'containMethod', enumContainOptions);
-  f_foodSources.add(CONFIG, 'bite');
-  
-  f_foodSources.add(CONFIG, 'distortion', Tree.distortionOptions);
+  let f_attractors = gui.addFolder('Attractors');
+  f_attractors.add(CONFIG, 'attractors', 100, 25000).step(1);
+  f_attractors.add(CONFIG, 'contain');
+  f_attractors.add(CONFIG, 'containMethod', enumContainOptions);
+  f_attractors.add(CONFIG, 'bite');
+  f_attractors.add(CONFIG, 'distortion', Tree.distortionOptions);
 
   guiActions = {
     run: e => initDrawing(),
@@ -204,7 +203,7 @@ function initDrawing( newSeed ) {
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  let leaves = [];
+  let attractors = [];
   let weight = 0;
   const offset = CONFIG.canvasSize * 0.1;
   const ns = CONFIG.canvasSize - 2 * offset;
@@ -242,7 +241,7 @@ function initDrawing( newSeed ) {
     const sdfBite = CONFIG.bite ? sdfCircle( x, y, cx, cy, 2*offset ) : 1;
     
     if ( sdfContainer > 0 && sdfBite > 0 ) {
-      leaves.push(new Leaf(
+      attractors.push(new Attractor(
         createVector(offset + x, offset + y),
         weight // weight
       ));
@@ -255,7 +254,7 @@ function initDrawing( newSeed ) {
     width: CONFIG.canvasSize,
     height: CONFIG.canvasSize,
     numLeaves: CONFIG.attractors,
-    leaves: leaves,
+    attractors: attractors,
     branchLength: CONFIG.branchLength ?? CONFIG.branchLength,
     maxDist: CONFIG.maxDist,
     minDist: CONFIG.minDist,
@@ -293,7 +292,7 @@ function draw() {
 
   DRAW_FLOWFIELD = false; //TODO: add to dat.gui // io_showFlowField.checked() && ( io_useDistortion.selected() === Tree.distortionOptions.FLOW );
 
-  if ( iterations-- > 0 && tree.leaves.length > 0 ) {
+  if ( iterations-- > 0 && tree.attractors.length > 0 ) {
     tree.grow();
 
     // To speed up generation, turn this off

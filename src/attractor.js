@@ -1,11 +1,6 @@
-// Coding Rainbow
-// Daniel Shiffman
-// http://patreon.com/codingtrain
-// Code for: https://youtu.be/kKT0v3qhIQY
-
-class Leaf {
+class Attractor {
   constructor( pos, weight ) {
-    if ( undefined === pos ) throw new Error("Leaf constructor requires a `pos` argument.");
+    if ( undefined === pos ) throw new Error("Attractor constructor requires a `pos` argument.");
 
     this.pos = pos;
     this.weight = weight ?? 1.0;
