@@ -48,7 +48,6 @@ class Polyline {
   }
   static drawPolyBlobVertices( vertices ) {
     const blob = ( x, y, r ) => {
-      const A = 3;
       const steps = 12;
       const angleIncrement = 360 / steps;
       let blobPoints = [];
@@ -71,7 +70,7 @@ class Polyline {
       push();
       fill( 0 );
       noStroke();
-      blob( v.pos.x, v.pos.y, i+1 );
+      blob( v.pos.x, v.pos.y, i+2 );
       pop();
     });
   }
