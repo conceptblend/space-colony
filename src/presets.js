@@ -246,6 +246,7 @@ const presets = {
     minDist: 3,
     branchLength: 2,
     attractors: 5000,//25000,
+    roots: 3,
     angle: 7,
     canvasSize: 540*2,//540*2, /*540 * 2*/
     steering: /* src: tree.js */Tree.steeringOptions.ROUNDING,
@@ -253,7 +254,15 @@ const presets = {
     contain: true,
     bite: true,
     strokeWeight: 3,
-    colorWay: [ "#F2EACB" ],
+    colorWay: [
+      "#b47b47ff",
+      "#aa8a55ff",
+      "#a79148ff",
+      "#aea36fff",
+      "#485ea7ff",
+      "#48a791ff",
+      "#9148a7ff"
+    ],
     seed: "get to the root of it",
   }, 
 };

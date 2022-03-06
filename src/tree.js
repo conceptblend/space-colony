@@ -23,6 +23,7 @@ class Tree {
     this.branchLength = options?.branchLength ?? 4;
     this.height = options?.height ?? 400;
     this.numAttractors = options?.numAttractors ?? 500;
+    this.numRoots = options.numRoots ?? 1;
     this.maxDist = options?.maxDist ?? 96;
     this.minDist = options?.minDist ?? 24;
     this.width = options?.width ?? 400;
@@ -51,6 +52,20 @@ class Tree {
     let nw = this.width - 2 * offset;
     let nh = this.height - 2 * offset;
 
+    //
+    // Set up the trunk/root -- doing this before the attractors makes the
+    // placement deterministic regardless of attractor count -- if the external
+    // randomness doesn't change. Doesn't hold true when random attractors are
+    // generated outside of here and passed in.
+    let pos, dir, root;
+    for ( let r = this.numRoots; r > 0; r-- ) {
+      pos = createVector(offset + Math.floor( Math.random()*nw ), offset + Math.floor( Math.random()*nh ) );
+      dir = p5.Vector.sub( createVector( this.width*0.5, this.height*0.5 ), pos ).normalize();
+      root = new Branch(null, pos, dir, this.branchLength);
+
+      this.qt.insert( root );
+    }
+    //
     // If there are no attractors provided, lets create some
     if ( this.attractors.length === 0 ) {
       for (let i = 0, len = this.numAttractors; i < len; i++) {
@@ -62,13 +77,6 @@ class Tree {
         ));
       }
     }
-    
-    // Set up the trunk/root
-    let pos = createVector(offset + Math.floor(Math.random()*nw), offset + Math.floor(Math.random()*nh) );
-    let dir = p5.Vector.sub( createVector( this.width*0.5, this.height*0.5 ), pos ).normalize();
-    let root = new Branch(null, pos, dir, this.branchLength);
-
-    this.qt.insert(root);
 
     let current = root;
     let found = false;

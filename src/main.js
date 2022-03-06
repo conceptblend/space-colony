@@ -115,6 +115,7 @@ function setup() {
   if ( undefined === CONFIG.fnShow ) CONFIG.fnShow = Polyline.drawingOptions.line;
   if ( undefined === CONFIG.showVertices ) CONFIG.showVertices = false;
   if ( undefined === CONFIG.containMethod ) CONFIG.containMethod = enumContainOptions.CENTERED_CIRCLE;
+  if ( undefined === CONFIG.roots ) CONFIG.roots = 1;
 
   gui = new dat.gui.GUI();
 
@@ -123,7 +124,7 @@ function setup() {
   gui.add(CONFIG, 'description');
   
   let f_branch = gui.addFolder('Branch');
-
+  f_branch.add(CONFIG, 'roots', 1, 6).step(1);
   f_branch.add(CONFIG, 'branchLength', 1, 64).step(1);
   f_branch.add(CONFIG, 'lifespan', 1, 256).step(1);
   f_branch.add(CONFIG, 'minDist', 1, 256).step(1);
@@ -254,6 +255,7 @@ function initDrawing( newSeed ) {
     width: CONFIG.canvasSize,
     height: CONFIG.canvasSize,
     numLeaves: CONFIG.attractors,
+    numRoots: CONFIG.roots,
     attractors: attractors,
     branchLength: CONFIG.branchLength ?? CONFIG.branchLength,
     maxDist: CONFIG.maxDist,
@@ -268,6 +270,7 @@ function initDrawing( newSeed ) {
       k: 0.00085,
     }),
     fnShow: v => {
+      // TODO: extract the decision-making and just pass the resultant function
       ( CONFIG.fnShow & Polyline.drawingOptions.line ) && Polyline.drawPolyline( v );
       ( CONFIG.fnShow & Polyline.drawingOptions.knuckles ) && Polyline.drawPolylineKnuckles( v );
       ( CONFIG.fnShow & Polyline.drawingOptions.vertices ) && Polyline.drawPolyVertices( v );
