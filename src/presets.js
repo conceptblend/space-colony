@@ -255,13 +255,13 @@ const presets = {
     bite: true,
     strokeWeight: 3,
     colorWay: [
-      "#b47b47ff",
-      "#aa8a55ff",
-      "#a79148ff",
-      "#aea36fff",
-      "#485ea7ff",
-      "#48a791ff",
-      "#9148a7ff"
+      "#b7cdbcff",
+      "#b9d4c5ff",
+      "#a8c9beff",
+      "#aed8d4ff",
+      "#c9a8b3ff",
+      "#bea8c9ff",
+      "#c9bea8ff"
     ],
     seed: "get to the root of it",
   }, 
