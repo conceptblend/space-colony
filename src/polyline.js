@@ -5,10 +5,10 @@ class Polyline {
     knuckles: 0x02,
     vertices: 0x04,
     blobVerts: 0x08,
-    blobVertsPlus: 0x12,
+    blobVertsPlus: 0x20,
     blobVertsTranslucent: 0x10,
     linesAndBlobVerts: 0x01 | 0x08,
-    linesAndBlobVertsPlus: 0x01 | 0x12,
+    linesAndBlobVertsPlus: 0x01 | 0x20,
   }
 
   static drawPolyline( vertices ) {
@@ -56,8 +56,8 @@ class Polyline {
       for ( let n=0; n<steps; n++ ) {
         let angle = n * angleIncrement * Math.PI / 180;
         blobPoints.push({
-          x: x + Math.cos( angle ) * ( r + Math.random() ),
-          y: y + Math.sin( angle ) * ( r + Math.random() )
+          x: x + Math.cos( angle ) * ( r + Math.random()*r*0.2 ),
+          y: y + Math.sin( angle ) * ( r + Math.random()*r*0.2 )
         });
       }
 
@@ -66,7 +66,7 @@ class Polyline {
       blobPoints.forEach( b => curveVertex( b.x, b.y ) );
       curveVertex( blobPoints[0].x, blobPoints[0].y );
       curveVertex( blobPoints[1].x, blobPoints[1].y );
-      endShape();
+      endShape(CLOSE);
     }
     vertices.forEach(( v, i ) => {
       push();
@@ -76,7 +76,6 @@ class Polyline {
       pop();
     });
   }
-
   static drawPolyBlobVerticesPlus( vertices ) {
     const blob = ( x, y, r ) => {
       const steps = 12;
@@ -85,8 +84,8 @@ class Polyline {
       for ( let n=0; n<steps; n++ ) {
         let angle = n * angleIncrement * Math.PI / 180;
         blobPoints.push({
-          x: x + Math.cos( angle ) * ( r + Math.random() ),
-          y: y + Math.sin( angle ) * ( r + Math.random() )
+          x: x + Math.cos( angle ) * ( r + Math.random()*r*0.2 ),
+          y: y + Math.sin( angle ) * ( r + Math.random()*r*0.2 )
         });
       }
 
@@ -95,12 +94,12 @@ class Polyline {
       blobPoints.forEach( b => curveVertex( b.x, b.y ) );
       curveVertex( blobPoints[0].x, blobPoints[0].y );
       curveVertex( blobPoints[1].x, blobPoints[1].y );
-      endShape();
+      endShape(CLOSE);
     }
     vertices.forEach(( v, i ) => {
       push();
+      fill( 0 )
       noStroke();
-      fill( 0 );
       blob( v.pos.x, v.pos.y, i+2 );
       if( i % 2 === 0 ) {
         noFill();
@@ -110,7 +109,6 @@ class Polyline {
       pop();
     });
   }
-
   static drawPolyBlobVerticesTranslucent( vertices ) {
     const blob = ( x, y, r ) => {
       const A = 3;
@@ -130,7 +128,7 @@ class Polyline {
       blobPoints.forEach( b => curveVertex( b.x, b.y ) );
       curveVertex( blobPoints[0].x, blobPoints[0].y );
       curveVertex( blobPoints[1].x, blobPoints[1].y );
-      endShape();
+      endShape(CLOSE);
     }
     vertices.forEach(( v, i ) => {
       push();
@@ -140,7 +138,7 @@ class Polyline {
       pop();
     });
   }
-
+  
   constructor( head, tail, fnShow ) {
     this.vertices = [];
     this.fnShow = fnShow ?? Polyline.drawPolyline;
