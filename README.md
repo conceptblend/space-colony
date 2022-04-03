@@ -36,3 +36,22 @@ The following were generated with these parameters:
 }
 ```
 ![Example 3](./doc/SpaceColonization-Bizarre-min_12-max_24-lifespan_48-attrCount_25000-N_90-length_4-2021-09-25T17_15_34.043Z.jpg)
+
+
+
+# Algo
+
+A branch is a point that refers to its parent point. Together, those points form a segment (or a branch).
+Branches are structured as points so they can be managed with a QuadTree for fast lookups.
+
+As a tree grows, all segments of a larger branch can be affected by the food resources around it. (i.e. There's always a chance that a branch node can spawn a new branch).
+
+When it comes time to optimize and clean up the drawing, there are segments that overlap and can be removed (especially for plotting). Doing this is sort of annoying with the way the branches are stored.
+
+I want to:
+
+- 1. Loop through all branches and see if there are any overlapping branches. (Flatten? Use quadtree?)
+
+- 2. Remove overlapping branch segments.
+
+2. When removing an overlapping branch, removing a branch doesn't remove its parent so you are just removing the node, not the segment. But if you remove the segment, the parent might be the parent of another branch so you don't necessarily want to remove it... This is the trouble of the nodes and segments being mixed.
