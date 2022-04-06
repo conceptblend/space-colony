@@ -66,6 +66,7 @@ const enumContainOptions = {
   CENTERED_CIRCLE: 1,
   UNIONED_CIRCLES: 2,
   DOME: 4,
+  EQUITRIANGLE: 8,
 }
 
 const sdfCircle = ( x, y, cx, cy, r ) => {
@@ -73,6 +74,26 @@ const sdfCircle = ( x, y, cx, cy, r ) => {
   const dy = y - cy;
 
   return r - Math.sqrt( dx * dx + dy * dy );
+}
+
+const sdfEquiTriangle = ( x, y, cx, cy, r ) => {
+  const k = Math.sqrt(3.0);
+  // p.x = abs(p.x) - 1.0;
+  const dx = Math.abs( x - cx ) - r;
+
+  // p.y = p.y + 1.0/k;
+  const dy = ( y + 1.4*r/k ) - cy;
+
+  let nx = dx, ny = dy;
+  
+  // if( p.x+k*p.y>0.0 ) p = vec2(p.x-k*p.y,-k*p.x-p.y)/2.0;
+  if( dx + k * dy > 0.0 ) {
+    nx = ( dx - k * dy ) / 2.0;
+    ny = ( -k * dx - dy ) / 2.0;
+  }
+
+  nx -= Math.min( Math.max( nx, -2.0 * r), 0.0 ); // clamp -2..0
+  return Math.sqrt( nx * nx + ny * ny ) * Math.sign(ny);
 }
 
 // r=radius, h=height
@@ -231,6 +252,9 @@ function initDrawing( newSeed ) {
         case enumContainOptions.DOME:
           // A dome-shaped cut disk nearly centered at the canvas midpoints
           sdfContainer = sdfCutDisk( x, y, cx, ns * 0.65, 4*offset, -offset );
+          break;
+        case enumContainOptions.EQUITRIANGLE:
+          sdfContainer = sdfEquiTriangle( x, y, cx, cy, 4*offset );
           break;
         case enumContainOptions.CENTERED_CIRCLE:
         default:
