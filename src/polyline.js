@@ -64,8 +64,7 @@ class Polyline {
       beginShape();
       curveVertex( blobPoints[0].x, blobPoints[0].y );
       blobPoints.forEach( b => curveVertex( b.x, b.y ) );
-      curveVertex( blobPoints[0].x, blobPoints[0].y );
-      curveVertex( blobPoints[1].x, blobPoints[1].y );
+      curveVertex( blobPoints[ blobPoints.length-1 ].x, blobPoints[ blobPoints.length-1 ].y );
       endShape(CLOSE);
     }
     vertices.forEach(( v, i ) => {
@@ -92,8 +91,7 @@ class Polyline {
       beginShape();
       curveVertex( blobPoints[0].x, blobPoints[0].y );
       blobPoints.forEach( b => curveVertex( b.x, b.y ) );
-      curveVertex( blobPoints[0].x, blobPoints[0].y );
-      curveVertex( blobPoints[1].x, blobPoints[1].y );
+      curveVertex( blobPoints[ blobPoints.length-1 ].x, blobPoints[ blobPoints.length-1 ].y );
       endShape(CLOSE);
     }
     vertices.forEach(( v, i ) => {
