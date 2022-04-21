@@ -300,6 +300,7 @@ function initDrawing( newSeed ) {
       ( CONFIG.fnShow & Polyline.drawingOptions.vertices ) && Polyline.drawPolyVertices( v );
       ( CONFIG.fnShow & Polyline.drawingOptions.blobVerts ) && Polyline.drawPolyBlobVertices( v );
       ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsPlus ) && Polyline.drawPolyBlobVerticesPlus( v );
+      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsPlusPlus ) && Polyline.drawPolyBlobVerticesPlusPlus( v );
       ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsTranslucent ) && Polyline.drawPolyBlobVerticesTranslucent( v );    
     }
   });

@@ -6,9 +6,11 @@ class Polyline {
     vertices: 0x04,
     blobVerts: 0x08,
     blobVertsPlus: 0x20,
+    blobVertsPlusPlus: 0x40,
     blobVertsTranslucent: 0x10,
     linesAndBlobVerts: 0x01 | 0x08,
     linesAndBlobVertsPlus: 0x01 | 0x20,
+    linesAndBlobVertsPlusPlus: 0x01 | 0x40,
   }
 
   static drawPolyline( vertices ) {
@@ -25,7 +27,6 @@ class Polyline {
     });
     endShape();
   }
-
   static drawPolylineKnuckles( vertices ) {
     beginShape();
     vertices.forEach(( v, i ) => {
@@ -91,7 +92,8 @@ class Polyline {
       beginShape();
       curveVertex( blobPoints[0].x, blobPoints[0].y );
       blobPoints.forEach( b => curveVertex( b.x, b.y ) );
-      curveVertex( blobPoints[ blobPoints.length-1 ].x, blobPoints[ blobPoints.length-1 ].y );
+      // curveVertex( blobPoints[ blobPoints.length-1 ].x, blobPoints[ blobPoints.length-1 ].y );
+      curveVertex( blobPoints[0].x, blobPoints[0].y );
       endShape(CLOSE);
     }
     vertices.forEach(( v, i ) => {
@@ -104,6 +106,105 @@ class Polyline {
         stroke( 0 );
         blob( v.pos.x, v.pos.y, i+5 );
       }
+      pop();
+    });
+  }
+  static getControlPoints(x0,y0,x1,y1,x2,y2,t){
+    var d01=Math.sqrt(Math.pow(x1-x0,2)+Math.pow(y1-y0,2));
+    var d12=Math.sqrt(Math.pow(x2-x1,2)+Math.pow(y2-y1,2));
+    var fa=t*d01/(d01+d12);   // scaling factor for triangle Ta
+    var fb=t*d12/(d01+d12);   // ditto for Tb, simplifies to fb=t-fa
+    var p1x=x1-fa*(x2-x0);    // x2-x0 is the width of triangle T
+    var p1y=y1-fa*(y2-y0);    // y2-y0 is the height of T
+    var p2x=x1+fb*(x2-x0);
+    var p2y=y1+fb*(y2-y0);  
+    return [p1x,p1y,p2x,p2y];
+}
+  static drawPolyBlobVerticesPlusPlus( vertices ) {
+    const blob = ( x, y, r, useFill ) => {
+      const steps = 6;
+      const angleIncrement = 360 / steps;
+      let blobPoints = [];
+      for ( let n=0; n<steps; n++ ) {
+        let angle = n * angleIncrement * Math.PI / 180;
+        blobPoints.push({
+          x: x + Math.cos( angle ) * ( r + Math.random()*r*0.5 ),
+          y: y + Math.sin( angle ) * ( r + Math.random()*r*0.5 )
+        });
+      }
+  
+      // Make a copy so we can augment the structure
+      let vv = [ ...blobPoints ];
+      const last = vv.length-1;
+      const closeIt = true;
+      const tension = 0.3;
+      
+      // Do a first past to calculate all of the control points and store them with
+      // each vertex for access when drawing.
+      vv.forEach(( v, i ) => {
+        /**
+          Something is janky in this logic that bends the first and last
+          vertices in an unexpected way when leaving it open. Fix it :)
+        **/
+        const v0i = ( i === 0   ) ? ( closeIt ? last : 0  ) : i-1;
+        const v2i = ( i === last ) ? ( closeIt ? 0   : last) : i+1; 
+        const v0 = vv[ v0i ];
+        const v2 = vv[ v2i ];
+        
+        const t = (( i === 0 || i === last ) && !closeIt ) ? 0 : tension;
+        const controls = Polyline.getControlPoints(
+          v0.x, v0.y, v.x, v.y, v2.x, v2.y, t
+        );
+  
+        if ( closeIt ) {
+          v.cIn = {
+            x: controls[ 0 ],
+            y: controls[ 1 ]
+          };
+          v.cOut = {
+            x: controls[ 2 ],
+            y: controls[ 3 ]
+          };
+        } else {
+          v.cIn = {
+            x: ( i === 0 ) ? v.x : controls[ 0 ],
+            y: ( i === 0 ) ? v.y : controls[ 1 ]
+          };
+          v.cOut = {
+            x: ( i === last ) ? v.x : controls[ 2 ],
+            y: ( i === last ) ? v.y : controls[ 3 ]
+          };
+        }
+      });
+
+      if ( useFill ) {
+        noStroke();
+        fill( 0 );
+      } else {
+        noFill();
+        stroke( 0 );
+      }
+
+      beginShape();
+      vertex( vv[0].x, vv[0].y );
+      // Loop through the points and add the curve to the path
+      for( let i=1; i < vv.length; i++ ){
+        const v0 = vv[ i-1 ];
+        const v1 = vv[ i   ];
+        bezierVertex( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
+      };
+
+      if ( closeIt ) {
+        const v0 = vv[ last ];
+        const v1 = vv[ 0 ];
+        bezierVertex( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
+      }
+      endShape(); // When using CLOSE, a straight line closes the shape :(
+    }
+    vertices.forEach(( v, i ) => {
+      push();
+      blob( v.pos.x, v.pos.y, i+3, true );
+      blob( v.pos.x, v.pos.y, 2*(i+3), false );
       pop();
     });
   }
@@ -136,7 +237,7 @@ class Polyline {
       pop();
     });
   }
-  
+
   constructor( head, tail, fnShow ) {
     this.vertices = [];
     this.fnShow = fnShow ?? Polyline.drawPolyline;
@@ -191,7 +292,7 @@ class Polyline {
   show() {
     DEBUG && stroke( Math.random() * 255, Math.random() * 255, Math.random() * 255 );
     // DEBUG && this.vertices.forEach(( v, i ) => circle( v.pos.x, v.pos.y, 1+i ));
-    
+
     this.fnShow( this.vertices );
     // Polyline.drawPolyline( this.vertices );
     // Polyline.drawPolylineKnuckles( this.vertices );
@@ -238,7 +339,7 @@ class Polyline {
       reflection = true;
       console.log(">>>>>");
       console.log("Vertices: %d", this.vertices.length)
-      
+
       this.vertices.forEach(( v, i ) => {
         console.log(`${i}: ${v.pos.x.toFixed(2)}, ${v.pos.y.toFixed(2)}`);
       })
