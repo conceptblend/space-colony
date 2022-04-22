@@ -203,9 +203,12 @@ class Polyline {
       endShape(); // When using CLOSE, a straight line closes the shape :(
     }
     vertices.forEach(( v, i ) => {
+      const n = i+1;
       push();
-      blob( v.pos.x, v.pos.y, i+3, true );
-      blob( v.pos.x, v.pos.y, 2*(i+3), false );
+      blob( v.pos.x, v.pos.y, n+2, true );
+      blob( v.pos.x, v.pos.y, 2*n, false );
+      blob( v.pos.x, v.pos.y, 3*n, false );
+      blob( v.pos.x, v.pos.y, 4*n, false );
       pop();
     });
   }
