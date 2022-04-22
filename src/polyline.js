@@ -8,9 +8,9 @@ class Polyline {
     blobVertsPlus: 0x20,
     blobVertsPlusPlus: 0x40,
     blobVertsTranslucent: 0x10,
-    linesAndBlobVerts: 0x01 | 0x08,
-    linesAndBlobVertsPlus: 0x01 | 0x20,
-    linesAndBlobVertsPlusPlus: 0x01 | 0x40,
+    linesAndBlobVerts: 0x01 + 0x08,
+    linesAndBlobVertsPlus: 0x01 + 0x20,
+    linesAndBlobVertsPlusPlus: 0x01 + 0x40,
   }
 
   static drawPolyline( vertices ) {
@@ -179,6 +179,7 @@ class Polyline {
 
       if ( useFill ) {
         noStroke();
+        // fill( 0,0,0,50 );
         fill( 0 );
       } else {
         noFill();
