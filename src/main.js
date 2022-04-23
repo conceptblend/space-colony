@@ -137,6 +137,7 @@ function setup() {
   if ( undefined === CONFIG.showVertices ) CONFIG.showVertices = false;
   if ( undefined === CONFIG.containMethod ) CONFIG.containMethod = enumContainOptions.CENTERED_CIRCLE;
   if ( undefined === CONFIG.roots ) CONFIG.roots = 1;
+  if ( undefined === CONFIG.tension ) CONFIG.tension = 0.4;
 
   gui = new dat.gui.GUI();
 
@@ -160,6 +161,7 @@ function setup() {
   f_style.add(CONFIG, 'fnShow', Polyline.drawingOptions);
   f_style.add(CONFIG, 'showVertices');
   f_style.add(CONFIG, 'strokeWeight', 1, 256).step(1);
+  f_style.add(CONFIG, 'tension', -2, 2).step(.1);
 
   let f_attractors = gui.addFolder('Attractors');
   f_attractors.add(CONFIG, 'attractors', 100, 25000).step(1);
@@ -212,7 +214,7 @@ function initDrawing( newSeed ) {
  
   const getColorWay = () => colorWay[ Math.floor( Math.random() * colorWay.length ) ];
 
-  bgColor = color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
+  bgColor = color( "#F4E8C9" ); //color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
   fgColor = color( 0 ); //color( "#523333" );; //color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
 
   background( bgColor );
@@ -301,6 +303,7 @@ function initDrawing( newSeed ) {
       ( CONFIG.fnShow & Polyline.drawingOptions.blobVerts ) && Polyline.drawPolyBlobVertices( v );
       ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsPlus ) && Polyline.drawPolyBlobVerticesPlus( v );
       ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsPlusPlus ) && Polyline.drawPolyBlobVerticesPlusPlus( v );
+      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsFilled ) && Polyline.drawPolyBlobVerticesFilled( v );
       ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsTranslucent ) && Polyline.drawPolyBlobVerticesTranslucent( v );    
     }
   });
