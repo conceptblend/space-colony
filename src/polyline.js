@@ -293,9 +293,25 @@ class Polyline {
       endShape(); // When using CLOSE, a straight line closes the shape :(
     }
     const lepal = [
-      "#bfc5f5ff",
-      "#bff5f0ff",
-      "#f0bff5ff",
+      // "#bfc5f5ff",
+      // "#bff5f0ff",
+      // "#f0bff5ff",
+      // --
+      // "#f0a6ebff",
+      // "#aba6f0ff",
+      // "#f0aba6ff",
+      // --
+      // "#f5abc7ff",
+      // "#d8abf5ff",
+      // "#f5d8abff",
+      // --
+      // "#d58381ff",
+      // "#d581d2ff",
+      // "#d2d581ff",
+      // --
+      "#e16982ff",
+      "#e1c769ff",
+      "#c769e1ff",
     ];
     vertices.forEach(( v, i ) => {
       const n = i+2;
