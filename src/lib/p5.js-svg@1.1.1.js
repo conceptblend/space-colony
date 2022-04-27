@@ -14,7 +14,17 @@
      *
      *  Copyright (c) 2014 Gliffy Inc.
      *  Copyright (c) 2021 Zeno Zeng
+     * 
+     * ==========
+     * 
+     * Forked, not forked.
+     * 
+     * Addition of layer ID by Andrew Wright
      */
+
+    // DOC: Layer ID
+    let currentID = 1;
+    // /DOC: Layer ID
 
     var Context = (function () {
 
@@ -306,6 +316,9 @@
                 key = keys[i];
                 element.setAttribute(key, properties[key]);
             }
+            // DOC: Layer ID
+            element.setAttribute('id', currentID++);
+            // /DOC: Layer ID
             return element;
         };
 
@@ -823,6 +836,10 @@
             this.__root.appendChild(this.__currentElement);
             //reset __groupStack as all the child group nodes are all removed.
             this.__groupStack = [];
+
+            // DOC: Layer ID
+            currentID = 1;
+            // /DOC: Layer ID
         };
 
         /**
