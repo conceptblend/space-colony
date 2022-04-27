@@ -50,8 +50,6 @@ When it comes time to optimize and clean up the drawing, there are segments that
 
 I want to:
 
-- 1. Loop through all branches and see if there are any overlapping branches. (Flatten? Use quadtree?)
-
-- 2. Remove overlapping branch segments.
-
-2. When removing an overlapping branch, removing a branch doesn't remove its parent so you are just removing the node, not the segment. But if you remove the segment, the parent might be the parent of another branch so you don't necessarily want to remove it... This is the trouble of the nodes and segments being mixed.
+  1. ~~Loop through all branches and see if there are any overlapping branches. (Flatten? Use quadtree?)~~
+  2. ~~Remove overlapping branch segments.~~
+  3. When removing an overlapping branch, removing a branch doesn't remove its parent so you are just removing the node, not the segment. But if you remove the segment, the parent might be the parent of another branch so you don't necessarily want to remove it... This is the trouble of the nodes and segments being mixed.
