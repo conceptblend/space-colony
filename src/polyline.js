@@ -314,7 +314,7 @@ class Polyline {
       "#c769e1ff",
     ];
     vertices.forEach(( v, i ) => {
-      const n = i+2;
+      const n = Math.min( i+2, 8 );
       push();
       // blob( v.pos.x, v.pos.y, 4*n, false );
       blob( v.pos.x, v.pos.y, 3*n, true, lepal[0] );
