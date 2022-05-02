@@ -67,6 +67,7 @@ const enumContainOptions = {
   UNIONED_CIRCLES: 2,
   DOME: 4,
   EQUITRIANGLE: 8,
+  HEART: 16,
 }
 
 const sdfCircle = ( x, y, cx, cy, r ) => {
@@ -114,6 +115,41 @@ const sdfCutDisk = ( x, y, cx, cy, r, h ) => {
   return -1 * ( (s < 0.0) ? Math.sqrt( dx*dx + dy*dy ) - r :        // circle
           (dx < w) ? h - dy     :        // segment line
           Math.sqrt( dx2*dx2 + dy2*dy2 )); // segment corner
+}
+
+const sdfHeart = ( x, y, cx, cy, _scale ) => {
+  // For the constants in this SDF to work, I believe (x,y) need to be
+  // normalized from 0..1.
+  let scale = _scale * 0.75;
+  // Normalize and reflect
+  const dx = Math.abs( x - cx ) / scale;
+  // Normalize and translate
+  const dy = 0.25 + 1.0 - ( y / scale );
+  
+  let dd, nx, ny;
+
+  if ( dy + dx > 1.0 ) {
+    nx = dx - 0.25;
+    ny = dy - 0.75;
+
+    dd = Math.sqrt( nx * nx + ny * ny ) - (Math.SQRT2 / 4.0);
+  } else {
+    let n1 = {
+      x: dx,
+      y: dy - 1.0
+    }
+    let sub = 0.5 * Math.max( dx + dy, 0 );
+    let n2 = {
+      x: dx - sub,
+      y: dy - sub
+    }
+
+    let d1 = n1.x * n1.x + n1.y * n1.y;
+    let d2 = n2.x * n2.x + n2.y * n2.y;
+    
+    dd = Math.sqrt( Math.min( d1, d2 ) ) * Math.sign( dx - dy );
+  }
+  return -dd;
 }
 
 /* /GLOBALS initialization */
@@ -258,6 +294,9 @@ function initDrawing( newSeed ) {
         case enumContainOptions.EQUITRIANGLE:
           sdfContainer = sdfEquiTriangle( x, y, cx, cy, 4*offset );
           break;
+          case enumContainOptions.HEART:
+            sdfContainer = sdfHeart( x, y, cx, cy, ns );
+            break;
         case enumContainOptions.CENTERED_CIRCLE:
         default:
           sdfContainer = sdfCircle( x, y, cx, cy, 4*offset );
