@@ -228,7 +228,7 @@ class Tree {
   }
   
   show() {
-    // this.attractors.forEach(attractor => attractor.show());
+    DEBUG && this.attractors.forEach(attractor => attractor.show());
     let branches = this.qt.flatten();
     
     branches.forEach( branch => branch.show() );
