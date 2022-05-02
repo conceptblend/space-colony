@@ -14,8 +14,8 @@ if [[ $1 ]] then
     FILE="occ.svg"
   fi
 
-  # vpype -v read --attr fill $1 reloop splitall linemerge linesimplify occult -i -r linesort write -f svg -p letter -l -c $FILE
-  vpype -v read --attr fill $1 reloop splitall linemerge linesimplify occult -i -r linesort layout --align center --valign center --fit-to-margins 1in letter write -f svg $FILE
+  # Note: I removed `splitall` from the pipeline because the blobs are better maintained and occluded without it
+  vpype -v read --attr fill $1 reloop linemerge linesimplify occult -i -r linesort layout --align center --valign center --fit-to-margins 0.05in 5.5inx8.5in filter --min-length 1mm write -f svg $FILE
   
   echo "Done."
   echo "Opening $FILE..."
