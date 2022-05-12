@@ -46,7 +46,7 @@ class QuadTree {
   }
 
   subdivide() {
-    if ( this.region.w <= 1 || this.region.h <= 1 ) return false;
+    if ( this.region.w <= 16 || this.region.h <= 16 ) return false;
 
     let halfW = this.region.w * 0.5;
     let halfH = this.region.h * 0.5;
@@ -135,7 +135,7 @@ class QuadTree {
       return true;
     }
 
-    // subdivide and insert
+    // no capacity. subdivide and insert
     if ( !this.divided ) {
       let couldDivide = this.subdivide();
 
