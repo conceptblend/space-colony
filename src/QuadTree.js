@@ -1,3 +1,12 @@
+/**
+ * The QuadTree uses rectangle objects for all areas ("Rect").
+ * All rectangles require the properties x, y, w, h
+ * @class Rect
+ * @property {number} x         X-Position
+ * @property {number} y         Y-Position
+ * @property {number} w         Width
+ * @property {number} h         Height
+ */ 
 class Rect {
   constructor( x, y, w, h ) {
     this.x = x;
@@ -28,6 +37,13 @@ class Rect {
 }
 
 class QuadTree {
+  /**
+   * The QuadTree uses rectangle objects for all areas ("Rect").
+   * All rectangles require the properties x, y, width, height
+   * @class QuadTree
+   * @param {Rect} region      Region bounding box
+   * @param {number} capacity  Maximum capacity
+   */ 
   constructor(region, capacity) {
     this.region = region;
     this.capacity = capacity;
