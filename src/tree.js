@@ -41,7 +41,7 @@ class Tree {
       k: 0.00085,
     }) ) : null;
 
-    this.qt = new QuadTree(new Rect(0, 0, this.width, this.height), 4);
+    this.qt = new QuadTree( new Rect(0, 0, this.width, this.height), 4 );
     this.attractors = options?.attractors ?? [];
 
     this.setup();
@@ -179,6 +179,7 @@ class Tree {
     // How can I traverse the whole list if it's in a QuadTree?
     //
     let branches = this.qt.flatten();
+
     let branch;
     for (let i = branches.length - 1; i >= 0; i--) {
       branch = branches[ i ];
@@ -228,8 +229,10 @@ class Tree {
   }
   
   show() {
-    // this.attractors.forEach(attractor => attractor.show());
+    DEBUG && this.attractors.forEach(attractor => attractor.show());
     let branches = this.qt.flatten();
+
+    this.qt.show();
     
     branches.forEach( branch => branch.show() );
   }
@@ -248,6 +251,8 @@ class Tree {
 
     let trimmed = this.dedupe( branches );
     /*DEBUG &&*/ console.log(`Trimmed: ${trimmed.length}`);
+
+    this.qt.show();
 
     if ( USE_SEGMENTS ) {
     

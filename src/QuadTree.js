@@ -1,3 +1,12 @@
+/**
+ * The QuadTree uses rectangle objects for all areas ("Rect").
+ * All rectangles require the properties x, y, w, h
+ * @class Rect
+ * @property {number} x         X-Position
+ * @property {number} y         Y-Position
+ * @property {number} w         Width
+ * @property {number} h         Height
+ */ 
 class Rect {
   constructor( x, y, w, h ) {
     this.x = x;
@@ -9,8 +18,8 @@ class Rect {
     this.t = y;
     this.r = x + w;
     this.b = y + h;
-    this.mx = x + w / 2;
-    this.my = y + h / 2;
+    this.mx = x + w * 0.5;
+    this.my = y + h * 0.5;
   }
   contains( node ) {
     return node.pos.x >= this.l &&
@@ -19,19 +28,26 @@ class Rect {
       node.pos.y < this.b;
   }
 
-  intersects( range ) {
+  intersects( region ) {
     //
-    if (this.l > range.r || this.r < range.l) return false;
-    if (this.t > range.b || this.b < range.t) return false;
+    if (this.l > region.r || this.r < region.l) return false;
+    if (this.t > region.b || this.b < region.t) return false;
     return true;
   }
 }
 
 class QuadTree {
+  /**
+   * The QuadTree uses rectangle objects for all areas ("Rect").
+   * All rectangles require the properties x, y, width, height
+   * @class QuadTree
+   * @param {Rect} region      Region bounding box
+   * @param {number} capacity  Maximum capacity
+   */ 
   constructor(region, capacity) {
     this.region = region;
     this.capacity = capacity;
-    this.nodes = [];
+    this.items = [];
     this.divided = false;
     this.subregions = {
       nw: null,
@@ -42,11 +58,11 @@ class QuadTree {
   }
 
   hasCapacity() {
-    return this.nodes.length < this.capacity && this.divided === false;
+    return this.divided === false && this.items.length < this.capacity;
   }
 
   subdivide() {
-    if ( this.region.w <= 1 || this.region.h <= 1 ) return false;
+    if ( this.region.w <= 16 || this.region.h <= 16 ) return false;
 
     let halfW = this.region.w * 0.5;
     let halfH = this.region.h * 0.5;
@@ -87,67 +103,56 @@ class QuadTree {
       ),
       this.capacity
     );
+
     this.divided = true;
+
+    // insert all previous nodes
+    while ( this.items.length ) {
+      // attempt to insert into child regions
+      this.insertIntoRegion( this.items.pop() );
+    }
+
     return this.divided;
   }
 
-  query( range ) {
-    let found = [];
+  query( region ) {
+    let itemsFound = [];
 
-    if ( !this.region.intersects( range ) ) return found; // empty array
+    if ( !this.region.intersects( region ) ) return itemsFound; // empty array
 
     if ( this.divided ) {
-      found = found.concat( this.subregions.nw.query( range ) );
-      found = found.concat( this.subregions.ne.query( range ) );
-      found = found.concat( this.subregions.sw.query( range ) );
-      found = found.concat( this.subregions.se.query( range ) );
+      itemsFound = itemsFound.concat( this.subregions.nw.query( region ) );
+      itemsFound = itemsFound.concat( this.subregions.ne.query( region ) );
+      itemsFound = itemsFound.concat( this.subregions.sw.query( region ) );
+      itemsFound = itemsFound.concat( this.subregions.se.query( region ) );
     } else {
-      this.nodes.forEach(p => {
-        if ( range.contains( p ) ) {
-          found.push( p );
-        }
-      });
+      itemsFound = itemsFound.concat( this.items.filter(i => region.contains( i )) );
     }
-    return found;
+    return itemsFound;
   }
 
   flatten() {
-    let found = [];
+    if ( !this.divided ) return [].concat(this.items);
 
-    if ( this.divided ) {
-      found = found.concat(
-        this.subregions.nw.flatten(),
-        this.subregions.ne.flatten(),
-        this.subregions.sw.flatten(),
-        this.subregions.se.flatten()
-      );
-    } else {
-      found = found.concat( this.nodes );
-    }
-    return found;
+    return [].concat(
+      this.subregions.nw.flatten(),
+      this.subregions.ne.flatten(),
+      this.subregions.sw.flatten(),
+      this.subregions.se.flatten()
+    );
   }
 
   insert(node) {
     if ( !this.region.contains( node ) ) return false; // not in my region
 
     if ( this.hasCapacity() ) {
-      this.nodes.push(node);
+      this.items.push( node );
       return true;
     }
 
-    // subdivide and insert
+    // no capacity so subdivide if necessary
     if ( !this.divided ) {
-      let couldDivide = this.subdivide();
-
-      // If we're down to the unit cell, stop subdividing
-      if ( !couldDivide ) return false; // lost a node
-
-      // insert all previous nodes
-      let n = this.nodes.length;
-      for ( let p = 0; p < n; p++ ) {
-        // attempt to insert into child regions
-        this.insertIntoRegion( this.nodes.pop() );
-      }
+      if ( !this.subdivide() ) return false; // failed to subdivide; dropping new node
     }
     // attempt to insert into child regions
     return this.insertIntoRegion( node );
@@ -164,10 +169,10 @@ class QuadTree {
   print() {
     console.log("== == == == ==\n");
     console.log("QuadTree Print ==");
-    console.log(`  > nodes: ${this.nodes.length}`);
+    console.log(`  > items: ${this.items.length}`);
     console.log(`  > Divided: ${this.divided}`);
-    if (this.nodes.length > 0) {
-      console.log(this.nodes);
+    if (this.items.length > 0) {
+      console.log(this.items);
     }
 
     console.log(`  > Subregion: NW`);
@@ -181,17 +186,19 @@ class QuadTree {
   }
 
   show(quadIndex) {
+    push();
     noFill();
     stroke(255);
     strokeWeight(1);
 
     rect(this.region.x, this.region.y, this.region.w, this.region.h);
 
-    this.nodes.forEach(p => circle(p.pos.x, p.pos.y, 2));
+    // this.items.forEach(p => circle(p.pos.x, p.pos.y, 2));
 
     if (this.subregions.nw !== null) this.subregions.nw.show(0);
     if (this.subregions.ne !== null) this.subregions.ne.show(1);
     if (this.subregions.sw !== null) this.subregions.sw.show(2);
     if (this.subregions.se !== null) this.subregions.se.show(3);
+    pop();
   }
 }

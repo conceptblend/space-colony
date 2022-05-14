@@ -67,6 +67,7 @@ const enumContainOptions = {
   UNIONED_CIRCLES: 2,
   DOME: 4,
   EQUITRIANGLE: 8,
+  HEART: 16,
 }
 
 const sdfCircle = ( x, y, cx, cy, r ) => {
@@ -116,6 +117,41 @@ const sdfCutDisk = ( x, y, cx, cy, r, h ) => {
           Math.sqrt( dx2*dx2 + dy2*dy2 )); // segment corner
 }
 
+const sdfHeart = ( x, y, cx, cy, _scale ) => {
+  // For the constants in this SDF to work, I believe (x,y) need to be
+  // normalized from 0..1.
+  let scale = _scale * 0.75;
+  // Normalize and reflect
+  const dx = Math.abs( x - cx ) / scale;
+  // Normalize and translate
+  const dy = 0.25 + 1.0 - ( y / scale );
+  
+  let dd, nx, ny;
+
+  if ( dy + dx > 1.0 ) {
+    nx = dx - 0.25;
+    ny = dy - 0.75;
+
+    dd = Math.sqrt( nx * nx + ny * ny ) - (Math.SQRT2 / 4.0);
+  } else {
+    let n1 = {
+      x: dx,
+      y: dy - 1.0
+    }
+    let sub = 0.5 * Math.max( dx + dy, 0 );
+    let n2 = {
+      x: dx - sub,
+      y: dy - sub
+    }
+
+    let d1 = n1.x * n1.x + n1.y * n1.y;
+    let d2 = n2.x * n2.x + n2.y * n2.y;
+    
+    dd = Math.sqrt( Math.min( d1, d2 ) ) * Math.sign( dx - dy );
+  }
+  return -dd;
+}
+
 /* /GLOBALS initialization */
 
 function setup() {
@@ -137,6 +173,7 @@ function setup() {
   if ( undefined === CONFIG.showVertices ) CONFIG.showVertices = false;
   if ( undefined === CONFIG.containMethod ) CONFIG.containMethod = enumContainOptions.CENTERED_CIRCLE;
   if ( undefined === CONFIG.roots ) CONFIG.roots = 1;
+  if ( undefined === CONFIG.tension ) CONFIG.tension = 0.4;
 
   gui = new dat.gui.GUI();
 
@@ -160,6 +197,7 @@ function setup() {
   f_style.add(CONFIG, 'fnShow', Polyline.drawingOptions);
   f_style.add(CONFIG, 'showVertices');
   f_style.add(CONFIG, 'strokeWeight', 1, 256).step(1);
+  f_style.add(CONFIG, 'tension', -2, 2).step(.1);
 
   let f_attractors = gui.addFolder('Attractors');
   f_attractors.add(CONFIG, 'attractors', 100, 25000).step(1);
@@ -212,7 +250,7 @@ function initDrawing( newSeed ) {
  
   const getColorWay = () => colorWay[ Math.floor( Math.random() * colorWay.length ) ];
 
-  bgColor = color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
+  bgColor = color( "#F4E8C9" ); //color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
   fgColor = color( 0 ); //color( "#523333" );; //color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
 
   background( bgColor );
@@ -256,6 +294,9 @@ function initDrawing( newSeed ) {
         case enumContainOptions.EQUITRIANGLE:
           sdfContainer = sdfEquiTriangle( x, y, cx, cy, 4*offset );
           break;
+          case enumContainOptions.HEART:
+            sdfContainer = sdfHeart( x, y, cx, cy, ns );
+            break;
         case enumContainOptions.CENTERED_CIRCLE:
         default:
           sdfContainer = sdfCircle( x, y, cx, cy, 4*offset );
@@ -300,6 +341,8 @@ function initDrawing( newSeed ) {
       ( CONFIG.fnShow & Polyline.drawingOptions.vertices ) && Polyline.drawPolyVertices( v );
       ( CONFIG.fnShow & Polyline.drawingOptions.blobVerts ) && Polyline.drawPolyBlobVertices( v );
       ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsPlus ) && Polyline.drawPolyBlobVerticesPlus( v );
+      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsPlusPlus ) && Polyline.drawPolyBlobVerticesPlusPlus( v );
+      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsFilled ) && Polyline.drawPolyBlobVerticesFilled( v );
       ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsTranslucent ) && Polyline.drawPolyBlobVerticesTranslucent( v );    
     }
   });
