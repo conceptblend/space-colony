@@ -18,10 +18,12 @@ export default class Polyline {
     linesAndFilledBlobs: 0x01 + 0x80,
   }
 
-  static drawPolyline( vertices ) {
+  static drawPolyline( vertices, ctx ) {
     let showVertices = getConfig().showVertices;
+    let myPolyline = [];
     beginShape();
     vertices.forEach(( v, i ) => {
+      myPolyline.push( [v.pos.x, v.pos.y] );
       vertex( v.pos.x, v.pos.y )
       if ( showVertices ) {
         if ( DEBUG ) {
@@ -32,8 +34,10 @@ export default class Polyline {
       }
     });
     endShape();
+
+    ctx.polyline( myPolyline ).fill('none').stroke({ width: 1, color: '#000' })
   }
-  static drawPolylineKnuckles( vertices ) {
+  static drawPolylineKnuckles( vertices, ctx ) {
     beginShape();
     vertices.forEach(( v, i ) => {
       vertex( v.pos.x, v.pos.y )
@@ -44,7 +48,7 @@ export default class Polyline {
     });
     endShape();
   }
-  static drawPolyVertices( vertices ) {
+  static drawPolyVertices( vertices, ctx ) {
     vertices.forEach(( v, i ) => {
       push();
       fill( 0 );
@@ -53,7 +57,7 @@ export default class Polyline {
       pop();
     });
   }
-  static drawPolyBlobVertices( vertices ) {
+  static drawPolyBlobVertices( vertices, ctx ) {
     const blob = ( x, y, r ) => {
       const steps = 12;
       const angleIncrement = 360 / steps;
@@ -80,7 +84,7 @@ export default class Polyline {
       pop();
     });
   }
-  static drawPolyBlobVerticesPlus( vertices ) {
+  static drawPolyBlobVerticesPlus( vertices, ctx ) {
     const blob = ( x, y, r ) => {
       const steps = 12;
       const angleIncrement = 360 / steps;
@@ -124,7 +128,7 @@ export default class Polyline {
     var p2y=y1+fb*(y2-y0);  
     return [p1x,p1y,p2x,p2y];
 }
-  static drawPolyBlobVerticesPlusPlus( vertices ) {
+  static drawPolyBlobVerticesPlusPlus( vertices, ctx ) {
     const blob = ( x, y, r, useFill ) => {
       const steps = 6;
       const angleIncrement = 360 / steps;
@@ -215,7 +219,7 @@ export default class Polyline {
       pop();
     });
   }
-  static drawPolyBlobVerticesFilled( vertices ) {
+  static drawPolyBlobVerticesFilled( vertices, ctx ) {
     const blob = ( x, y, r, useFill, c ) => {
       const steps = 6;
       const angleIncrement = 360 / steps;
@@ -280,21 +284,29 @@ export default class Polyline {
         stroke( 0 );
       }
 
+      let curve = [];
+
       beginShape();
+
       vertex( vv[0].x, vv[0].y );
+      let path = `M${ vv[0].x } ${ vv[0].y } `;
       // Loop through the points and add the curve to the path
       for( let i=1; i < vv.length; i++ ){
         const v0 = vv[ i-1 ];
         const v1 = vv[ i   ];
         bezierVertex( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
+        curve.push( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
       };
 
       if ( closeIt ) {
         const v0 = vv[ last ];
         const v1 = vv[ 0 ];
         bezierVertex( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
+        curve.push( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
       }
       endShape(); // When using CLOSE, a straight line closes the shape :(
+      path += `C${ curve.join(' ') }z`;
+      ctx.path( path ).fill( useFill ? c ?? "#000" : "none" ).stroke({ weight: 1, color: "#000" })
     }
     const lepal = [
       // "#bfc5f5ff",
@@ -327,7 +339,7 @@ export default class Polyline {
       pop();
     });
   }
-  static drawPolyBlobVerticesTranslucent( vertices ) {
+  static drawPolyBlobVerticesTranslucent( vertices, ctx ) {
     const blob = ( x, y, r ) => {
       const A = 3;
       const steps = 12;

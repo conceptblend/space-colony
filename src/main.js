@@ -10,9 +10,14 @@ import Tree from './modules/tree.js';
 import Attractor from './modules/attractor.js';
 import Polyline from './modules/polyline.js';
 import FluidDistortion from './modules/fluiddistortion.js';
+import { SVG } from '../lib/svg.esm.js';
 
-
-
+/**
+ * TODO:
+ * Move this to `main.js` and refactor Polyline to take in a drawing context (ctx)
+ */
+// let this.svgCtx = SVG().addTo('body').size( getConfig().canvasSize, getConfig().canvasSize )
+let __SVGCTX;
 
 window.DEBUG = !true;
 const SHOWINPROGESS = true;
@@ -153,7 +158,6 @@ const sdfHeart = ( x, y, cx, cy, _scale ) => {
 
 // Expose to `window` context so P5 can access it
 window.setup = function() {
-  console.debug( "Hello" );
   /**
    * ==== ENVIRONMENT initialization
    */
@@ -215,6 +219,13 @@ window.setup = function() {
   gui.add(guiActions, 'runRandom');
   gui.add(guiActions, 'export');
 
+
+  __SVGCTX = SVG()
+    .addTo('body')
+    .size( CONFIG.canvasSize, CONFIG.canvasSize )
+    .viewbox(`0 0 ${ CONFIG.canvasSize } ${ CONFIG.canvasSize }`);
+
+
   noLoop();
 }
 
@@ -251,6 +262,8 @@ function initDrawing( newSeed ) {
 
   bgColor = color( "#F4E8C9" ); //color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
   fgColor = color( 0 ); //color( "#523333" );; //color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
+
+  __SVGCTX.clear();
 
   background( bgColor );
   // Optimization when drawing only the stroke
@@ -335,14 +348,14 @@ function initDrawing( newSeed ) {
     }),
     fnShow: v => {
       // TODO: extract the decision-making and just pass the resultant function
-      ( CONFIG.fnShow & Polyline.drawingOptions.line ) && Polyline.drawPolyline( v );
-      ( CONFIG.fnShow & Polyline.drawingOptions.knuckles ) && Polyline.drawPolylineKnuckles( v );
-      ( CONFIG.fnShow & Polyline.drawingOptions.vertices ) && Polyline.drawPolyVertices( v );
-      ( CONFIG.fnShow & Polyline.drawingOptions.blobVerts ) && Polyline.drawPolyBlobVertices( v );
-      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsPlus ) && Polyline.drawPolyBlobVerticesPlus( v );
-      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsPlusPlus ) && Polyline.drawPolyBlobVerticesPlusPlus( v );
-      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsFilled ) && Polyline.drawPolyBlobVerticesFilled( v );
-      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsTranslucent ) && Polyline.drawPolyBlobVerticesTranslucent( v );    
+      ( CONFIG.fnShow & Polyline.drawingOptions.line ) && Polyline.drawPolyline( v, __SVGCTX );
+      ( CONFIG.fnShow & Polyline.drawingOptions.knuckles ) && Polyline.drawPolylineKnuckles( v, __SVGCTX );
+      ( CONFIG.fnShow & Polyline.drawingOptions.vertices ) && Polyline.drawPolyVertices( v, __SVGCTX );
+      ( CONFIG.fnShow & Polyline.drawingOptions.blobVerts ) && Polyline.drawPolyBlobVertices( v, __SVGCTX );
+      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsPlus ) && Polyline.drawPolyBlobVerticesPlus( v, __SVGCTX );
+      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsPlusPlus ) && Polyline.drawPolyBlobVerticesPlusPlus( v, __SVGCTX );
+      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsFilled ) && Polyline.drawPolyBlobVerticesFilled( v, __SVGCTX );
+      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsTranslucent ) && Polyline.drawPolyBlobVerticesTranslucent( v, __SVGCTX );    
     }
   });
 
