@@ -5,8 +5,16 @@
 // http://patreon.com/codingtrain
 // https://youtu.be/kKT0v3qhIQY
 
+import { CONFIG } from './modules/presets.js';
+import Tree from './modules/tree.js';
+import Attractor from './modules/attractor.js';
+import Polyline from './modules/polyline.js';
+import FluidDistortion from './modules/fluiddistortion.js';
 
-const DEBUG = !true;
+
+
+
+window.DEBUG = !true;
 const SHOWINPROGESS = true;
 let DRAW_FLOWFIELD = !true;
 
@@ -49,17 +57,6 @@ let fgColor;
 // Parameter I/O
 let gui;
 let guiActions;
-
-/**
- * return TRUE if a is within delta of b
- * return FALSE otherwise
- **/
- function nearEqual( a, b, deltaOverride ) {
-  if (a === Infinity && b === Infinity ) return true;
-  if (a === -Infinity && b === -Infinity ) return true;
-  const delta = deltaOverride ?? 0.025; // ≥ 0.05 introduces loss
-  return Math.abs(b - a) < delta;
-}
 
 const enumContainOptions = {
   NONE: 0,
@@ -154,7 +151,9 @@ const sdfHeart = ( x, y, cx, cy, _scale ) => {
 
 /* /GLOBALS initialization */
 
-function setup() {
+// Expose to `window` context so P5 can access it
+window.setup = function() {
+  console.debug( "Hello" );
   /**
    * ==== ENVIRONMENT initialization
    */
@@ -356,8 +355,8 @@ function initDrawing( newSeed ) {
   loop(); 
 }
 
-
-function draw() {
+// Expose to `window` context so P5 can access it
+window.draw = function() {
   if ( !isRunning ) return;
   clear();
 

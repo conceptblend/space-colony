@@ -1,7 +1,15 @@
 // Dramatically modified but inspired by Daniel Shiffman
 // Code for: https://youtu.be/kKT0v3qhIQY
 
-class Tree {
+import QuadTree, { Rect } from './QuadTree.js';
+import Attractor from './attractor.js';
+import Branch from './branch.js';
+import Polyline from './polyline.js';
+import FluidDistortion from './fluiddistortion.js';
+import Segment from './segment.js';
+import { nearEqual } from "./utils.js";
+
+export default class Tree {
   static steeringOptions = {
     NONE: 0x01,
     ROUNDING: 0x02,

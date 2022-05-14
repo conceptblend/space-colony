@@ -1,5 +1,8 @@
+import { nearEqual } from "./utils.js";
+import { getConfig } from "./presets.js";
+
 const THRESHOLD = 0.25;
-class Polyline {
+export default class Polyline {
   static drawingOptions = {
     line: 0x01,
     knuckles: 0x02,
@@ -16,10 +19,11 @@ class Polyline {
   }
 
   static drawPolyline( vertices ) {
+    let showVertices = getConfig().showVertices;
     beginShape();
     vertices.forEach(( v, i ) => {
       vertex( v.pos.x, v.pos.y )
-      if ( CONFIG.showVertices ) {
+      if ( showVertices ) {
         if ( DEBUG ) {
           circle( v.pos.x, v.pos.y, 2+i )
         } else {
@@ -137,7 +141,7 @@ class Polyline {
       let vv = [ ...blobPoints ];
       const last = vv.length-1;
       const closeIt = true;
-      const tension = CONFIG.tension;
+      const tension = getConfig().tension;
       
       // Do a first past to calculate all of the control points and store them with
       // each vertex for access when drawing.
@@ -228,7 +232,7 @@ class Polyline {
       let vv = [ ...blobPoints ];
       const last = vv.length-1;
       const closeIt = true;
-      const tension = CONFIG.tension;
+      const tension = getConfig().tension || 0.5;
       
       // Do a first past to calculate all of the control points and store them with
       // each vertex for access when drawing.
