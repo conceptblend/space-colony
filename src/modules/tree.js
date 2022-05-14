@@ -236,13 +236,13 @@ export default class Tree {
     return this.qt.flatten();
   }
   
-  show() {
+  show( ctx ) {
     DEBUG && this.attractors.forEach(attractor => attractor.show());
     let branches = this.qt.flatten();
 
-    this.qt.show();
+    this.qt.show( ctx );
     
-    branches.forEach( branch => branch.show() );
+    branches.forEach( branch => branch.show( ctx ) );
   }
   
   /**
@@ -251,7 +251,7 @@ export default class Tree {
    * --
    * Naively stash found segments based on a hash of the start and end points.
    **/
-  joinAndShow() {
+  joinAndShow( ctx ) {
     const USE_SEGMENTS = true;
 
     let branches = this.qt.flatten();
@@ -260,7 +260,7 @@ export default class Tree {
     let trimmed = this.dedupe( branches );
     /*DEBUG &&*/ console.log(`Trimmed: ${trimmed.length}`);
 
-    this.qt.show();
+    this.qt.show( ctx );
 
     if ( USE_SEGMENTS ) {
     
@@ -289,7 +289,7 @@ export default class Tree {
         // p.fnShow = v => { Polyline.drawPolyline( v ); Polyline.drawPolyBlobVerticesTranslucent( v ); };
         p.fnShow = this.fnShow;
         // show it
-        p.show();
+        p.show( ctx );
       });
 
     } else {
@@ -297,7 +297,7 @@ export default class Tree {
 
       polylines.forEach( p => {
         p.simplify();
-        p.show();
+        p.show( ctx );
       });
     }
   }

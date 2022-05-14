@@ -185,7 +185,7 @@ export default class QuadTree {
     if (this.subregions.se !== null) this.subregions.se.print();
   }
 
-  show(quadIndex) {
+  show( ctx, quadIndex) {
     push();
     noFill();
     stroke(255);
@@ -193,12 +193,17 @@ export default class QuadTree {
 
     rect(this.region.x, this.region.y, this.region.w, this.region.h);
 
+    ctx.rect( this.region.w, this.region.h )
+      .fill( "none" )
+      .stroke({ weight: 1, color: "#fff" })
+      .move( this.region.x, this.region.y );
+
     // this.items.forEach(p => circle(p.pos.x, p.pos.y, 2));
 
-    if (this.subregions.nw !== null) this.subregions.nw.show(0);
-    if (this.subregions.ne !== null) this.subregions.ne.show(1);
-    if (this.subregions.sw !== null) this.subregions.sw.show(2);
-    if (this.subregions.se !== null) this.subregions.se.show(3);
+    if (this.subregions.nw !== null) this.subregions.nw.show( ctx, 0 );
+    if (this.subregions.ne !== null) this.subregions.ne.show( ctx, 1 );
+    if (this.subregions.sw !== null) this.subregions.sw.show( ctx, 2 );
+    if (this.subregions.se !== null) this.subregions.se.show( ctx, 3 );
     pop();
   }
 }

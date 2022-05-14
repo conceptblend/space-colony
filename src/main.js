@@ -20,7 +20,7 @@ import { SVG } from '../lib/svg.esm.js';
 let __SVGCTX;
 
 window.DEBUG = !true;
-const SHOWINPROGESS = true;
+const SHOWINPROGESS = !true;
 let DRAW_FLOWFIELD = !true;
 
 /**
@@ -57,6 +57,7 @@ let t_start = null;
 let t_end = null;
 
 let bgColor;
+let bgColorHex;
 let fgColor;
 
 // Parameter I/O
@@ -225,7 +226,6 @@ window.setup = function() {
     .size( CONFIG.canvasSize, CONFIG.canvasSize )
     .viewbox(`0 0 ${ CONFIG.canvasSize } ${ CONFIG.canvasSize }`);
 
-
   noLoop();
 }
 
@@ -260,12 +260,16 @@ function initDrawing( newSeed ) {
  
   const getColorWay = () => colorWay[ Math.floor( Math.random() * colorWay.length ) ];
 
-  bgColor = color( "#F4E8C9" ); //color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
+  bgColorHex = "#F4E8C9";
+  bgColor = color( bgColorHex ); //color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
   fgColor = color( 0 ); //color( "#523333" );; //color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
 
-  __SVGCTX.clear();
-
+  clear();
   background( bgColor );
+
+  __SVGCTX.clear();
+  __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( bgColorHex );
+  
   // Optimization when drawing only the stroke
   noFill();
   stroke( fgColor );
@@ -371,7 +375,6 @@ function initDrawing( newSeed ) {
 // Expose to `window` context so P5 can access it
 window.draw = function() {
   if ( !isRunning ) return;
-  clear();
 
   DRAW_FLOWFIELD = false; //TODO: add to dat.gui // io_showFlowField.checked() && ( io_useDistortion.selected() === Tree.distortionOptions.FLOW );
 
@@ -381,12 +384,19 @@ window.draw = function() {
     // To speed up generation, turn this off
     if ( SHOWINPROGESS ) {
       clear(); // for SVG this clears left-overs
-      background( bgColor);
-      tree.show();
+      background( bgColor );
+
+      __SVGCTX.clear();
+      __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( bgColorHex );
+      
+      tree.show( __SVGCTX );
     }
   } else {
     t_end = Date.now();
     background( bgColor );
+
+    __SVGCTX.clear();
+    __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( bgColorHex );
 
     // %%%%%%%%%%%%%%%%%
     // SHOW THE FLOW FIELD
@@ -418,7 +428,7 @@ window.draw = function() {
     }
     // %%%%%%%%%%%%%%%%%
 
-    tree.joinAndShow();
+    tree.joinAndShow( __SVGCTX );
 
     console.log( `Runtime: ${( t_end - t_start )/1000}s` );
     isRunning = false;

@@ -52,9 +52,10 @@ export default class Branch {
     return new Branch( this, nextPos, this.dir.copy(), this.len );
   }
 
-  show() {
+  show( ctx ) {
     if ( this.parent !== null ) {
       line( this.pos.x, this.pos.y, this.parent.pos.x, this.parent.pos.y );
+      ctx.line( this.pos.x, this.pos.y, this.parent.pos.x, this.parent.pos.y );
     }
   }
 }
