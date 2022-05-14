@@ -7,7 +7,7 @@
  * @property {number} w         Width
  * @property {number} h         Height
  */ 
-class Rect {
+export class Rect {
   constructor( x, y, w, h ) {
     this.x = x;
     this.y = y;
@@ -36,7 +36,7 @@ class Rect {
   }
 }
 
-class QuadTree {
+export default class QuadTree {
   /**
    * The QuadTree uses rectangle objects for all areas ("Rect").
    * All rectangles require the properties x, y, width, height

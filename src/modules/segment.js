@@ -1,4 +1,6 @@
-class Segment {
+import { nearEqual } from "./utils.js";
+
+export default class Segment {
   constructor( head, tail, colour = [0,0,0] ) {
     this.head = head;
     this.tail = tail;

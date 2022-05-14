@@ -1,4 +1,4 @@
-class FluidDistortion {
+export default class FluidDistortion {
   constructor( options ) {
     this.directions = [];
     this.magnitudes = [];

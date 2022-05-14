@@ -3,7 +3,7 @@
 // http://patreon.com/codingtrain
 // Code for: https://youtu.be/kKT0v3qhIQY
 
-class Branch {
+export default class Branch {
   constructor( parent, pos, dir, length = 4 ) {
     this.pos = pos;
     this.parent = parent;

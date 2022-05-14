@@ -1,3 +1,5 @@
+import Tree from './tree.js';
+
 const presets = {
   zero: {
     lifespan: 48,
@@ -257,4 +259,5 @@ const presets = {
   }, 
 };
 
-const CONFIG = presets.rhizomes2;
+export const CONFIG = presets.rhizomes2;
+export function getConfig() { return CONFIG };

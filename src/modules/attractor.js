@@ -1,4 +1,4 @@
-class Attractor {
+export default class Attractor {
   constructor( pos, weight ) {
     if ( undefined === pos ) throw new Error("Attractor constructor requires a `pos` argument.");
 
