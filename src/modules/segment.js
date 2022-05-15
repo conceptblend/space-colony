@@ -52,7 +52,7 @@ export default class Segment {
     return false;
   }
 
-  show() {
-    line( this.x1, this.y1, this.x2, this.y2 );
+  show( ctx ) {
+    ctx.line( this.x1, this.y1, this.x2, this.y2 );
   }
 }

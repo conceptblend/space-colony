@@ -156,11 +156,16 @@ window.setup = function() {
   /**
    * ==== ENVIRONMENT initialization
    */
-  if ( EXPORTMETHOD.id === EXPORT_METHODS.svg.id ) {
-    createCanvas( CONFIG.canvasSize, CONFIG.canvasSize, SVG ); // MUCH SLOWER but necessary for the SVG exports
-  } else {
-    createCanvas( CONFIG.canvasSize, CONFIG.canvasSize ); // Good for testing or for digital outputs
-  }
+   __SVGCTX = SVG()
+   .addTo('#render')
+   .size( CONFIG.canvasSize, CONFIG.canvasSize )
+   .viewbox(`0 0 ${ CONFIG.canvasSize } ${ CONFIG.canvasSize }`);
+
+  // if ( EXPORTMETHOD.id === EXPORT_METHODS.svg.id ) {
+  //   createCanvas( CONFIG.canvasSize, CONFIG.canvasSize, SVG ); // MUCH SLOWER but necessary for the SVG exports
+  // } else {
+  //   createCanvas( CONFIG.canvasSize, CONFIG.canvasSize ); // Good for testing or for digital outputs
+  // }
   angleMode( DEGREES );
   strokeJoin( ROUND );
   // End optimization
@@ -213,12 +218,6 @@ window.setup = function() {
   gui.add(guiActions, 'run');
   gui.add(guiActions, 'runRandom');
   gui.add(guiActions, 'export');
-
-
-  __SVGCTX = SVG()
-    .addTo('body')
-    .size( CONFIG.canvasSize, CONFIG.canvasSize )
-    .viewbox(`0 0 ${ CONFIG.canvasSize } ${ CONFIG.canvasSize }`);
 
   noLoop();
 }
