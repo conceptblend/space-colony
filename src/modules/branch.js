@@ -54,7 +54,6 @@ export default class Branch {
 
   show( ctx ) {
     if ( this.parent !== null ) {
-      line( this.pos.x, this.pos.y, this.parent.pos.x, this.parent.pos.y );
       ctx.line( this.pos.x, this.pos.y, this.parent.pos.x, this.parent.pos.y );
     }
   }
