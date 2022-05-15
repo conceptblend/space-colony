@@ -12,16 +12,10 @@ import Polyline from './modules/polyline.js';
 import FluidDistortion from './modules/fluiddistortion.js';
 import { SVG } from '../lib/svg.esm.js';
 
-/**
- * TODO:
- * Move this to `main.js` and refactor Polyline to take in a drawing context (ctx)
- */
-// let this.svgCtx = SVG().addTo('body').size( getConfig().canvasSize, getConfig().canvasSize )
 let __SVGCTX;
 
 window.DEBUG = !true;
 const SHOWINPROGESS = !true;
-let DRAW_FLOWFIELD = !true;
 
 /**
  * ==== EXPORT CONFIGURATION
@@ -264,14 +258,11 @@ function initDrawing( newSeed ) {
   bgColor = color( bgColorHex ); //color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
   fgColor = color( 0 ); //color( "#523333" );; //color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
 
-  clear();
-  background( bgColor );
 
   __SVGCTX.clear();
   __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( bgColorHex );
   
   // Optimization when drawing only the stroke
-  noFill();
   stroke( fgColor );
   strokeWeight( CONFIG.strokeWeight ?? 2 ); // 16
 
@@ -376,16 +367,11 @@ function initDrawing( newSeed ) {
 window.draw = function() {
   if ( !isRunning ) return;
 
-  DRAW_FLOWFIELD = false; //TODO: add to dat.gui // io_showFlowField.checked() && ( io_useDistortion.selected() === Tree.distortionOptions.FLOW );
-
   if ( iterations-- > 0 && tree.attractors.length > 0 ) {
     tree.grow();
 
     // To speed up generation, turn this off
     if ( SHOWINPROGESS ) {
-      clear(); // for SVG this clears left-overs
-      background( bgColor );
-
       __SVGCTX.clear();
       __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( bgColorHex );
       
@@ -393,40 +379,9 @@ window.draw = function() {
     }
   } else {
     t_end = Date.now();
-    background( bgColor );
 
     __SVGCTX.clear();
     __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( bgColorHex );
-
-    // %%%%%%%%%%%%%%%%%
-    // SHOW THE FLOW FIELD
-    if ( DRAW_FLOWFIELD ) {
-      push();
-      let stepSizeX = width / tree.fluidDistortion.cols;
-      let stepSizeY = height / tree.fluidDistortion.rows;
-
-      for ( let h=0, hlen = tree.fluidDistortion.rows; h<hlen; h++ ) {
-        for ( let w=0, wlen = tree.fluidDistortion.cols; w<wlen; w++ ) {
-          let dir = tree.fluidDistortion.getDirection( w, h );
-          let mag = tree.fluidDistortion.getMagnitude( w, h );
-          
-          stroke("#eee");
-          strokeWeight( 1 );
-          let ww = w * stepSizeX + stepSizeX * 0.5;
-          let hh = h * stepSizeY + stepSizeY * 0.5;
-
-          ellipse( ww, hh, 3, 3 );
-          line(
-            ww,
-            hh,
-            ww + Math.cos( dir*360 ) * (mag * 20),
-            hh + Math.sin( dir*360 ) * (mag * 20)
-          );
-        }
-      }
-      pop();
-    }
-    // %%%%%%%%%%%%%%%%%
 
     tree.joinAndShow( __SVGCTX );
 
