@@ -2,6 +2,92 @@ import { nearEqual } from "./utils.js";
 import { getConfig } from "./presets.js";
 
 const THRESHOLD = 0.25;
+
+function getControlPoints(x0,y0,x1,y1,x2,y2,t){
+  var d01=Math.sqrt(Math.pow(x1-x0,2)+Math.pow(y1-y0,2));
+  var d12=Math.sqrt(Math.pow(x2-x1,2)+Math.pow(y2-y1,2));
+  var fa=t*d01/(d01+d12);   // scaling factor for triangle Ta
+  var fb=t*d12/(d01+d12);   // ditto for Tb, simplifies to fb=t-fa
+  var p1x=x1-fa*(x2-x0);    // x2-x0 is the width of triangle T
+  var p1y=y1-fa*(y2-y0);    // y2-y0 is the height of T
+  var p2x=x1+fb*(x2-x0);
+  var p2y=y1+fb*(y2-y0);  
+  return [p1x,p1y,p2x,p2y];
+}
+
+function blob( ctx, x, y, r, useFill = false, c ) {
+  const steps = 6;
+  const angleIncrement = 360 / steps;
+  let blobPoints = [];
+  for ( let n=0; n<steps; n++ ) {
+    let angle = n * angleIncrement * Math.PI / 180;
+    blobPoints.push({
+      x: x + Math.cos( angle ) * ( r + Math.random()*r*0.5 ),
+      y: y + Math.sin( angle ) * ( r + Math.random()*r*0.5 )
+    });
+  }
+
+  // Make a copy so we can augment the structure
+  let vv = [ ...blobPoints ];
+  const last = vv.length-1;
+  const closeIt = true;
+  const tension = getConfig().tension || 0.5;
+  
+  // Do a first pass to calculate all of the control points and store them with
+  // each vertex for access when drawing.
+  vv.forEach(( v, i ) => {
+    /**
+      Something is janky in this logic that bends the first and last
+      vertices in an unexpected way when leaving it open. Fix it :)
+    **/
+    const v0i = ( i === 0   ) ? ( closeIt ? last : 0  ) : i-1;
+    const v2i = ( i === last ) ? ( closeIt ? 0   : last) : i+1; 
+    const v0 = vv[ v0i ];
+    const v2 = vv[ v2i ];
+    
+    const t = (( i === 0 || i === last ) && !closeIt ) ? 0 : tension;
+    const controls = getControlPoints(
+      v0.x, v0.y, v.x, v.y, v2.x, v2.y, t
+    );
+
+    if ( closeIt ) {
+      v.cIn = {
+        x: controls[ 0 ],
+        y: controls[ 1 ]
+      };
+      v.cOut = {
+        x: controls[ 2 ],
+        y: controls[ 3 ]
+      };
+    } else {
+      v.cIn = {
+        x: ( i === 0 ) ? v.x : controls[ 0 ],
+        y: ( i === 0 ) ? v.y : controls[ 1 ]
+      };
+      v.cOut = {
+        x: ( i === last ) ? v.x : controls[ 2 ],
+        y: ( i === last ) ? v.y : controls[ 3 ]
+      };
+    }
+  });
+
+  let curve = [];
+  let path = `M${ vv[0].x } ${ vv[0].y } `;
+  // Loop through the points and add the curve to the path
+  for( let i=1; i < vv.length; i++ ){
+    const v0 = vv[ i-1 ];
+    const v1 = vv[ i   ];
+    curve.push( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
+  };
+
+  if ( closeIt ) {
+    const v0 = vv[ last ];
+    const v1 = vv[ 0 ];
+    curve.push( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
+  }
+  path += `C${ curve.join(' ') }z`;
+  ctx.path( path ).fill( useFill ? c ?? "#000" : "none" ).stroke({ weight: 1, color: "#000" })
+}
 export default class Polyline {
   static drawingOptions = {
     line: 0x01,
@@ -18,296 +104,66 @@ export default class Polyline {
     linesAndFilledBlobs: 0x01 + 0x80,
   }
 
-  static drawPolyline( vertices, ctx ) {
-    let showVertices = getConfig().showVertices;
+  static drawPolyline( vertices, ctx, style ) {
     let myPolyline = [];
-    beginShape();
-    vertices.forEach(( v, i ) => {
-      myPolyline.push( [v.pos.x, v.pos.y] );
-      vertex( v.pos.x, v.pos.y )
-      if ( showVertices ) {
-        if ( DEBUG ) {
-          circle( v.pos.x, v.pos.y, 2+i )
-        } else {
-          circle( v.pos.x, v.pos.y, 1 );
-        }
-      }
-    });
-    endShape();
 
-    ctx.polyline( myPolyline ).fill('none').stroke({ width: 1, color: '#000' })
-  }
-  static drawPolylineKnuckles( vertices, ctx ) {
-    beginShape();
-    vertices.forEach(( v, i ) => {
-      vertex( v.pos.x, v.pos.y )
-      push();
-      fill( 0 );
-      circle( v.pos.x, v.pos.y, i )
-      pop();
+    vertices.forEach( v => {
+      myPolyline.push([ v.pos.x, v.pos.y ]);
     });
-    endShape();
+
+    ctx.polyline( myPolyline ).fill('none').stroke( style ?? { width: 1, color: '#000' })
   }
+  // Draw the polyline AND the vertices at a static size
   static drawPolyVertices( vertices, ctx ) {
-    vertices.forEach(( v, i ) => {
-      push();
-      fill( 0 );
-      noStroke();
-      circle( v.pos.x, v.pos.y, i )
-      pop();
+    let myPolyline = [];
+    let r = 1.5;
+    
+    vertices.forEach( v => {      
+      myPolyline.push([ v.pos.x, v.pos.y ]);
+      ctx.circle( r * 2 ).move( v.pos.x - r, v.pos.y - r ).stroke( "none" ).fill( style?.color ?? "#000");
     });
+    ctx.polyline( myPolyline ).fill('none').stroke( style ?? { width: 1, color: '#000' })
   }
+  // Draw the polyline AND the vertices at a dynamic size
+  static drawPolylineKnuckles( vertices, ctx, style ) {
+    let myPolyline = [];
+    let r;
+
+    vertices.forEach(( v, i ) => {
+      myPolyline.push([ v.pos.x, v.pos.y ]);
+      r = 2+i;
+      ctx.circle( r * 2 ).move( v.pos.x - r, v.pos.y - r ).stroke( "none" ).fill( style?.color ?? "#000");
+    });
+
+    ctx.polyline( myPolyline ).fill('none').stroke( style ?? { width: 1, color: '#000' })
+  }
+  // Draw just blob vertices
   static drawPolyBlobVertices( vertices, ctx ) {
-    const blob = ( x, y, r ) => {
-      const steps = 12;
-      const angleIncrement = 360 / steps;
-      let blobPoints = [];
-      for ( let n=0; n<steps; n++ ) {
-        let angle = n * angleIncrement * Math.PI / 180;
-        blobPoints.push({
-          x: x + Math.cos( angle ) * ( r + Math.random()*r*0.2 ),
-          y: y + Math.sin( angle ) * ( r + Math.random()*r*0.2 )
-        });
-      }
-
-      beginShape();
-      curveVertex( blobPoints[0].x, blobPoints[0].y );
-      blobPoints.forEach( b => curveVertex( b.x, b.y ) );
-      curveVertex( blobPoints[ blobPoints.length-1 ].x, blobPoints[ blobPoints.length-1 ].y );
-      endShape(CLOSE);
-    }
     vertices.forEach(( v, i ) => {
-      push();
-      fill( 0 );
-      noStroke();
-      blob( v.pos.x, v.pos.y, i+2 );
-      pop();
+      blob( ctx, v.pos.x, v.pos.y, i+2, true, "#000" );
     });
   }
+  // Draw blob vertices with an outer ring
   static drawPolyBlobVerticesPlus( vertices, ctx ) {
-    const blob = ( x, y, r ) => {
-      const steps = 12;
-      const angleIncrement = 360 / steps;
-      let blobPoints = [];
-      for ( let n=0; n<steps; n++ ) {
-        let angle = n * angleIncrement * Math.PI / 180;
-        blobPoints.push({
-          x: x + Math.cos( angle ) * ( r + Math.random()*r*0.2 ),
-          y: y + Math.sin( angle ) * ( r + Math.random()*r*0.2 )
-        });
-      }
-
-      beginShape();
-      curveVertex( blobPoints[0].x, blobPoints[0].y );
-      blobPoints.forEach( b => curveVertex( b.x, b.y ) );
-      // curveVertex( blobPoints[ blobPoints.length-1 ].x, blobPoints[ blobPoints.length-1 ].y );
-      curveVertex( blobPoints[0].x, blobPoints[0].y );
-      endShape(CLOSE);
-    }
     vertices.forEach(( v, i ) => {
-      push();
-      fill( 0 )
-      noStroke();
-      blob( v.pos.x, v.pos.y, i+2 );
+      blob( ctx, v.pos.x, v.pos.y, i+2, true, "#000" );
       if( i % 2 === 0 ) {
-        noFill();
-        stroke( 0 );
-        blob( v.pos.x, v.pos.y, i+5 );
+        blob( ctx, v.pos.x, v.pos.y, i+5, false );
       }
-      pop();
     });
   }
-  static getControlPoints(x0,y0,x1,y1,x2,y2,t){
-    var d01=Math.sqrt(Math.pow(x1-x0,2)+Math.pow(y1-y0,2));
-    var d12=Math.sqrt(Math.pow(x2-x1,2)+Math.pow(y2-y1,2));
-    var fa=t*d01/(d01+d12);   // scaling factor for triangle Ta
-    var fb=t*d12/(d01+d12);   // ditto for Tb, simplifies to fb=t-fa
-    var p1x=x1-fa*(x2-x0);    // x2-x0 is the width of triangle T
-    var p1y=y1-fa*(y2-y0);    // y2-y0 is the height of T
-    var p2x=x1+fb*(x2-x0);
-    var p2y=y1+fb*(y2-y0);  
-    return [p1x,p1y,p2x,p2y];
-}
+  // Draw blob vertices with multiple outer rings
   static drawPolyBlobVerticesPlusPlus( vertices, ctx ) {
-    const blob = ( x, y, r, useFill ) => {
-      const steps = 6;
-      const angleIncrement = 360 / steps;
-      let blobPoints = [];
-      for ( let n=0; n<steps; n++ ) {
-        let angle = n * angleIncrement * Math.PI / 180;
-        blobPoints.push({
-          x: x + Math.cos( angle ) * ( r + Math.random()*r*0.5 ),
-          y: y + Math.sin( angle ) * ( r + Math.random()*r*0.5 )
-        });
-      }
-  
-      // Make a copy so we can augment the structure
-      let vv = [ ...blobPoints ];
-      const last = vv.length-1;
-      const closeIt = true;
-      const tension = getConfig().tension;
-      
-      // Do a first past to calculate all of the control points and store them with
-      // each vertex for access when drawing.
-      vv.forEach(( v, i ) => {
-        /**
-          Something is janky in this logic that bends the first and last
-          vertices in an unexpected way when leaving it open. Fix it :)
-        **/
-        const v0i = ( i === 0   ) ? ( closeIt ? last : 0  ) : i-1;
-        const v2i = ( i === last ) ? ( closeIt ? 0   : last) : i+1; 
-        const v0 = vv[ v0i ];
-        const v2 = vv[ v2i ];
-        
-        const t = (( i === 0 || i === last ) && !closeIt ) ? 0 : tension;
-        const controls = Polyline.getControlPoints(
-          v0.x, v0.y, v.x, v.y, v2.x, v2.y, t
-        );
-  
-        if ( closeIt ) {
-          v.cIn = {
-            x: controls[ 0 ],
-            y: controls[ 1 ]
-          };
-          v.cOut = {
-            x: controls[ 2 ],
-            y: controls[ 3 ]
-          };
-        } else {
-          v.cIn = {
-            x: ( i === 0 ) ? v.x : controls[ 0 ],
-            y: ( i === 0 ) ? v.y : controls[ 1 ]
-          };
-          v.cOut = {
-            x: ( i === last ) ? v.x : controls[ 2 ],
-            y: ( i === last ) ? v.y : controls[ 3 ]
-          };
-        }
-      });
-
-      if ( useFill ) {
-        noStroke();
-        fill( 0 );
-      } else {
-        noFill();
-        stroke( 0 );
-      }
-
-      beginShape();
-      vertex( vv[0].x, vv[0].y );
-      // Loop through the points and add the curve to the path
-      for( let i=1; i < vv.length; i++ ){
-        const v0 = vv[ i-1 ];
-        const v1 = vv[ i   ];
-        bezierVertex( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
-      };
-
-      if ( closeIt ) {
-        const v0 = vv[ last ];
-        const v1 = vv[ 0 ];
-        bezierVertex( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
-      }
-      endShape(); // When using CLOSE, a straight line closes the shape :(
-    }
     vertices.forEach(( v, i ) => {
       const n = i+2;
-      push();
-      // blob( v.pos.x, v.pos.y, 4*n, false );
-      blob( v.pos.x, v.pos.y, 3*n, false );
-      blob( v.pos.x, v.pos.y, 2*n, false );
-      blob( v.pos.x, v.pos.y, n, true );
-      pop();
+      // blob( ctx, v.pos.x, v.pos.y, 4*n, false );
+      blob( ctx, v.pos.x, v.pos.y, 3*n, false );
+      blob( ctx, v.pos.x, v.pos.y, 2*n, false );
+      blob( ctx, v.pos.x, v.pos.y, n, true );
     });
   }
+  // Draw blob vertices with stroke and fill
   static drawPolyBlobVerticesFilled( vertices, ctx ) {
-    const blob = ( x, y, r, useFill, c ) => {
-      const steps = 6;
-      const angleIncrement = 360 / steps;
-      let blobPoints = [];
-      for ( let n=0; n<steps; n++ ) {
-        let angle = n * angleIncrement * Math.PI / 180;
-        blobPoints.push({
-          x: x + Math.cos( angle ) * ( r + Math.random()*r*0.5 ),
-          y: y + Math.sin( angle ) * ( r + Math.random()*r*0.5 )
-        });
-      }
-  
-      // Make a copy so we can augment the structure
-      let vv = [ ...blobPoints ];
-      const last = vv.length-1;
-      const closeIt = true;
-      const tension = getConfig().tension || 0.5;
-      
-      // Do a first past to calculate all of the control points and store them with
-      // each vertex for access when drawing.
-      vv.forEach(( v, i ) => {
-        /**
-          Something is janky in this logic that bends the first and last
-          vertices in an unexpected way when leaving it open. Fix it :)
-        **/
-        const v0i = ( i === 0   ) ? ( closeIt ? last : 0  ) : i-1;
-        const v2i = ( i === last ) ? ( closeIt ? 0   : last) : i+1; 
-        const v0 = vv[ v0i ];
-        const v2 = vv[ v2i ];
-        
-        const t = (( i === 0 || i === last ) && !closeIt ) ? 0 : tension;
-        const controls = Polyline.getControlPoints(
-          v0.x, v0.y, v.x, v.y, v2.x, v2.y, t
-        );
-  
-        if ( closeIt ) {
-          v.cIn = {
-            x: controls[ 0 ],
-            y: controls[ 1 ]
-          };
-          v.cOut = {
-            x: controls[ 2 ],
-            y: controls[ 3 ]
-          };
-        } else {
-          v.cIn = {
-            x: ( i === 0 ) ? v.x : controls[ 0 ],
-            y: ( i === 0 ) ? v.y : controls[ 1 ]
-          };
-          v.cOut = {
-            x: ( i === last ) ? v.x : controls[ 2 ],
-            y: ( i === last ) ? v.y : controls[ 3 ]
-          };
-        }
-      });
-
-      if ( useFill ) {
-        stroke( 0 );
-        fill( c ?? 0 );
-      } else {
-        noFill();
-        stroke( 0 );
-      }
-
-      let curve = [];
-
-      beginShape();
-
-      vertex( vv[0].x, vv[0].y );
-      let path = `M${ vv[0].x } ${ vv[0].y } `;
-      // Loop through the points and add the curve to the path
-      for( let i=1; i < vv.length; i++ ){
-        const v0 = vv[ i-1 ];
-        const v1 = vv[ i   ];
-        bezierVertex( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
-        curve.push( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
-      };
-
-      if ( closeIt ) {
-        const v0 = vv[ last ];
-        const v1 = vv[ 0 ];
-        bezierVertex( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
-        curve.push( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
-      }
-      endShape(); // When using CLOSE, a straight line closes the shape :(
-      path += `C${ curve.join(' ') }z`;
-      ctx.path( path ).fill( useFill ? c ?? "#000" : "none" ).stroke({ weight: 1, color: "#000" })
-    }
     const lepal = [
       // "#bfc5f5ff",
       // "#bff5f0ff",
@@ -331,41 +187,16 @@ export default class Polyline {
     ];
     vertices.forEach(( v, i ) => {
       const n = Math.min( i+2, 8 );
-      push();
-      // blob( v.pos.x, v.pos.y, 4*n, false );
-      blob( v.pos.x, v.pos.y, 3*n, true, lepal[0] );
-      blob( v.pos.x, v.pos.y, 2*n, true, lepal[1] );
-      blob( v.pos.x, v.pos.y, n, true, lepal[2] );
-      pop();
+      // blob( ctx, v.pos.x, v.pos.y, 4*n, false );
+      blob( ctx, v.pos.x, v.pos.y, 3*n, true, lepal[0] );
+      blob( ctx, v.pos.x, v.pos.y, 2*n, true, lepal[1] );
+      blob( ctx, v.pos.x, v.pos.y, n, true, lepal[2] );
     });
   }
+  // Draw blob vertices with stroke and translucent fill
   static drawPolyBlobVerticesTranslucent( vertices, ctx ) {
-    const blob = ( x, y, r ) => {
-      const A = 3;
-      const steps = 12;
-      const angleIncrement = 360 / steps;
-      let blobPoints = [];
-      for ( let n=0; n<steps; n++ ) {
-        let angle = n * angleIncrement * Math.PI / 180;
-        blobPoints.push({
-          x: x + Math.cos( angle ) * ( r + Math.random() ),
-          y: y + Math.sin( angle ) * ( r + Math.random() )
-        });
-      }
-
-      beginShape();
-      curveVertex( blobPoints[0].x, blobPoints[0].y );
-      blobPoints.forEach( b => curveVertex( b.x, b.y ) );
-      curveVertex( blobPoints[0].x, blobPoints[0].y );
-      curveVertex( blobPoints[1].x, blobPoints[1].y );
-      endShape(CLOSE);
-    }
     vertices.forEach(( v, i ) => {
-      push();
-      fill( 0,0,0, 128 );
-      noStroke();
-      blob( v.pos.x, v.pos.y, i+1 );
-      pop();
+      blob( ctx, v.pos.x, v.pos.y, i+1, true, "#00000077" );
     });
   }
 
@@ -421,15 +252,7 @@ export default class Polyline {
     return false;
   }
   show() {
-    DEBUG && stroke( Math.random() * 255, Math.random() * 255, Math.random() * 255 );
-    // DEBUG && this.vertices.forEach(( v, i ) => circle( v.pos.x, v.pos.y, 1+i ));
-
     this.fnShow( this.vertices );
-    // Polyline.drawPolyline( this.vertices );
-    // Polyline.drawPolylineKnuckles( this.vertices );
-    // Polyline.drawPolyVertices( this.vertices );
-    // Polyline.drawPolyBlobVertices( this.vertices );
-
   }
 
   simplify() {
