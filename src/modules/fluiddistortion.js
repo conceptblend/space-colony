@@ -13,13 +13,14 @@ export default class FluidDistortion {
     let zOff1 = Math.random() * Math.pow(2, 16);
     let zOff2 = Math.random() * Math.pow(2, 16) + Math.pow(2, 16);
 
+    // TODO: Replace after p5.js is removed
     for( let y = 0; y < this.rows; y++ ) {
       for( let x = 0; x < this.cols; x++ ) {
         let i = x + y * this.cols,
             xk = x * this.k,
             yk = y * this.k;
-        this.directions[ i ] = noise( xk, yk, zOff1 );
-        this.magnitudes[ i ] = noise( xk * 10, yk * 10, zOff2 );
+        this.directions[ i ] = noise.perlin3( xk, yk, zOff1 );
+        this.magnitudes[ i ] = noise.perlin3( xk * 10, yk * 10, zOff2 );
       }
     }
   }

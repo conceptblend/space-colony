@@ -3,6 +3,8 @@
 // http://patreon.com/codingtrain
 // Code for: https://youtu.be/kKT0v3qhIQY
 
+import Vector2d from "./vector2d.js";
+
 export default class Branch {
   constructor( parent, pos, dir, length = 4 ) {
     this.pos = pos;
@@ -46,7 +48,8 @@ export default class Branch {
   }
 
   next() {
-    const nextDir = p5.Vector.mult( this.dir, this.len );
+    // const nextDir = p5.Vector.mult( this.dir, this.len );
+    const nextDir = Vector2d.mult( this.dir, this.len );
     const nextPos = nextDir.add( this.pos );
     this.isLeaf = false;
     return new Branch( this, nextPos, this.dir.copy(), this.len );

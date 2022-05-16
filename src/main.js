@@ -11,6 +11,7 @@ import Attractor from './modules/attractor.js';
 import Polyline from './modules/polyline.js';
 import FluidDistortion from './modules/fluiddistortion.js';
 import { SVG } from '../lib/svg.esm.js';
+import Vector2d from './modules/vector2d.js';
 
 let __SVGCTX;
 
@@ -53,6 +54,7 @@ let t_end = null;
 let bgColor;
 let bgColorHex;
 let fgColor;
+let fgColorHex;
 
 // Parameter I/O
 let gui;
@@ -161,14 +163,7 @@ window.setup = function() {
    .size( CONFIG.canvasSize, CONFIG.canvasSize )
    .viewbox(`0 0 ${ CONFIG.canvasSize } ${ CONFIG.canvasSize }`);
 
-  // if ( EXPORTMETHOD.id === EXPORT_METHODS.svg.id ) {
-  //   createCanvas( CONFIG.canvasSize, CONFIG.canvasSize, SVG ); // MUCH SLOWER but necessary for the SVG exports
-  // } else {
-  //   createCanvas( CONFIG.canvasSize, CONFIG.canvasSize ); // Good for testing or for digital outputs
-  // }
-  angleMode( DEGREES );
-  strokeJoin( ROUND );
-  // End optimization
+  // strokeJoin( ROUND );
   /* /ENVIRONMENT init */
 
   // Give the CONFIG a default drawing function
@@ -218,8 +213,6 @@ window.setup = function() {
   gui.add(guiActions, 'run');
   gui.add(guiActions, 'runRandom');
   gui.add(guiActions, 'export');
-
-  noLoop();
 }
 
 function initDrawing( newSeed ) {
@@ -236,7 +229,9 @@ function initDrawing( newSeed ) {
    * subsequent calls do not. Thus, the sequence is disrupted on the first pass.
    **/
 
-  noiseSeed( CONFIG.seed );
+  // TODO: REPLACE once p5.js is removed
+  noise.seed( CONFIG.seed );
+  // noiseSeed( CONFIG.seed );
   /** /IMPORTANT */
 
   const colorWay = CONFIG.colorWay ?? [
@@ -254,16 +249,19 @@ function initDrawing( newSeed ) {
   const getColorWay = () => colorWay[ Math.floor( Math.random() * colorWay.length ) ];
 
   bgColorHex = "#F4E8C9";
-  bgColor = color( bgColorHex ); //color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
-  fgColor = color( 0 ); //color( "#523333" );; //color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
+  fgColorHex = "#000";
+  // TODO: Replace after p5.js is removed
+  // bgColor = color( bgColorHex ); //color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
+  // fgColor = color( fgColorHex ); //color( "#523333" );; //color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
 
 
   __SVGCTX.clear();
   __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( bgColorHex );
   
   // Optimization when drawing only the stroke
-  stroke( fgColor );
-  strokeWeight( CONFIG.strokeWeight ?? 2 ); // 16
+  // TODO: Replace after p5.js is removed
+  // stroke( fgColor );
+  // strokeWeight( CONFIG.strokeWeight ?? 2 ); // 16
 
   iterations = CONFIG.lifespan;
 
@@ -314,7 +312,7 @@ function initDrawing( newSeed ) {
     
     if ( sdfContainer > 0 && sdfBite > 0 ) {
       attractors.push(new Attractor(
-        createVector(offset + x, offset + y),
+        new Vector2d(offset + x, offset + y),
         weight // weight
       ));
     }
@@ -359,9 +357,21 @@ function initDrawing( newSeed ) {
   console.log("Drawing...");
   isRunning = true;
   t_start = Date.now();
-  loop(); 
+  loop();
 }
 
+window.loop = function() {
+  window.isLooping = true;
+  window.tick();
+}
+window.noLoop = function() {
+  window.isLooping = false;
+}
+window.tick = function() {
+  window.draw();
+  if ( !window.isLooping ) return;
+  requestAnimationFrame( window.tick );
+}
 // Expose to `window` context so P5 can access it
 window.draw = function() {
   if ( !isRunning ) return;
@@ -370,7 +380,7 @@ window.draw = function() {
     tree.grow();
 
     // To speed up generation, turn this off
-    if ( SHOWINPROGESS ) {
+    if ( false && SHOWINPROGESS ) {
       __SVGCTX.clear();
       __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( bgColorHex );
       
@@ -378,6 +388,8 @@ window.draw = function() {
     }
   } else {
     t_end = Date.now();
+    noLoop();
+    isRunning = false;
 
     __SVGCTX.clear();
     __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( bgColorHex );
@@ -385,8 +397,6 @@ window.draw = function() {
     tree.joinAndShow( __SVGCTX );
 
     console.log( `Runtime: ${( t_end - t_start )/1000}s` );
-    isRunning = false;
-    noLoop();
   }
 }
 
@@ -402,8 +412,9 @@ function getName() {
   return `SpaceColonization-${CONFIG.description.replace(/\s+/gi, '_')}-${params}-${new Date().toISOString()}`;
 }
 
-function saveImage( ext = 'png' ) {
-  save(`${ getName() }.${ ext }`);
+function saveImage( ext = 'svg' ) {
+  const url = URL.createObjectURL(new Blob([ __SVGCTX.svg() ], {type: "image/svg+xml"}));
+  downloadBlob( url, `${ getName() }.${ ext }` );
 }
 
 function saveConfig() {
@@ -419,7 +430,25 @@ function saveConfig() {
   cfg.meta = {
     fluidDistortion: ( tree.currentConfig() ).fluidDistortion,
   };
-  saveJSON( cfg, `${getName()}-config.json` );
+
+  const data = JSON.stringify( cfg, null, 2 );
+  const url = URL.createObjectURL(new Blob([ data ], {type: "application/json"}));
+  downloadBlob( url, `${getName()}-config.json` );
+}
+
+function downloadBlob( url, filename ) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename || `Untitled ${Date.now() }`;
+  a.style.display = 'none';
+
+  a.onclick = e => {
+    document.body.removeChild(e.target);
+    e.stopPropagation();
+  };
+
+  document.body.appendChild(a);
+  a.click();
 }
 
 function downloadOutput() {
@@ -429,3 +458,7 @@ function downloadOutput() {
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+window.setup();
+

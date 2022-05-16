@@ -8,6 +8,7 @@ import Polyline from './polyline.js';
 import FluidDistortion from './fluiddistortion.js';
 import Segment from './segment.js';
 import { nearEqual } from "./utils.js";
+import Vector2d from './vector2d.js';
 
 export default class Tree {
   static steeringOptions = {
@@ -66,9 +67,10 @@ export default class Tree {
     // randomness doesn't change. Doesn't hold true when random attractors are
     // generated outside of here and passed in.
     let pos, dir, root;
+    let midpoint = new Vector2d( this.width*0.5, this.height*0.5 );
     for ( let r = this.numRoots; r > 0; r-- ) {
-      pos = createVector(offset + Math.floor( Math.random()*nw ), offset + Math.floor( Math.random()*nh ) );
-      dir = p5.Vector.sub( createVector( this.width*0.5, this.height*0.5 ), pos ).normalize();
+      pos = new Vector2d(offset + Math.floor( Math.random()*nw ), offset + Math.floor( Math.random()*nh ) );
+      dir = Vector2d.sub( midpoint, pos ).normalize();
       root = new Branch(null, pos, dir, this.branchLength);
 
       this.qt.insert( root );
@@ -81,7 +83,7 @@ export default class Tree {
         let x = Math.floor( Math.random() * nw );
         let y = Math.floor( Math.random() * nh );
         this.attractors.push(new Attractor(
-          createVector(offset + x, offset + y)
+          new Vector2d(offset + x, offset + y)
         ));
       }
     }
@@ -91,7 +93,7 @@ export default class Tree {
 
     while ( !found ) {
       this.attractors.forEach(attractor => {
-        let d = p5.Vector.dist(current.pos, attractor.pos);
+        let d = Vector2d.dist(current.pos, attractor.pos);
         if (d < this.maxDist) {
           found = true;
         }
@@ -121,20 +123,20 @@ export default class Tree {
         case Tree.distortionOptions.NONE:
           break;
         case Tree.distortionOptions.SINWAVE1:
-          attractor.pos.add(sin(0.5*attractor.pos.y), 0);
+          attractor.pos.add(Math.sin(0.5*attractor.pos.y), 0);
           break;
         case Tree.distortionOptions.SINWAVE2:
-          attractor.pos.add(sin(2*attractor.pos.y), 0);
+          attractor.pos.add(Math.sin(2*attractor.pos.y), 0);
           break;
         case Tree.distortionOptions.SINWAVE3:
-          attractor.pos.add(2*sin(4*attractor.pos.y), 0);
+          attractor.pos.add(2*Math.sin(4*attractor.pos.y), 0);
           break;
         case Tree.distortionOptions.WARP:
-          attractor.pos.add(sin(attractor.pos.y + this.seed), (0.5 + 0.5*cos(attractor.pos.x  + this.seed)) * 2);
+          attractor.pos.add(Math.sin(attractor.pos.y + this.seed), (0.5 + 0.5*Math.cos(attractor.pos.x  + this.seed)) * 2);
           break;
         case Tree.distortionOptions.FLOW:
-          let xw = attractor.pos.x / width,
-              yh = attractor.pos.y / height;
+          let xw = attractor.pos.x / this.width,
+              yh = attractor.pos.y / this.height;
           let dir = this.fluidDistortion.getDirectionFromNormalized( xw, yh ) * 360;
           let mag = this.fluidDistortion.getMagnitudeFromNormalized( xw, yh ) * 10;
           attractor.pos.add( mag * Math.cos( dir ), mag * Math.sin( dir ) );
@@ -169,7 +171,7 @@ export default class Tree {
 
       // if we found a attractor, add a force to its direction
       if (closestBranch !== null) {
-        let newDir = p5.Vector.sub(attractor.pos, closestBranch.pos);
+        let newDir = Vector2d.sub(attractor.pos, closestBranch.pos);
         closestBranch.dir.add( newDir.mult(attractor.weight).normalize() );
         closestBranch.count++;
       }
