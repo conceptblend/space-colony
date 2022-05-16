@@ -255,6 +255,8 @@ export default class Tree {
    **/
   joinAndShow( ctx ) {
     const USE_SEGMENTS = true;
+    const ctxQt = ctx.group().attr('id', 'quadtree'),
+          ctxPoly = ctx.group().attr('id', 'lines');
 
     let branches = this.qt.flatten();
     /*DEBUG &&*/ console.log(`Full: ${branches.length}`);
@@ -262,7 +264,7 @@ export default class Tree {
     let trimmed = this.dedupe( branches );
     /*DEBUG &&*/ console.log(`Trimmed: ${trimmed.length}`);
 
-    this.qt.show( ctx );
+    this.qt.show( ctxQt );
 
     if ( USE_SEGMENTS ) {
     
@@ -288,10 +290,9 @@ export default class Tree {
       polylines.forEach( p => {
         DEBUG && p.inspect();
         // late set the fnShow for rendering....
-        // p.fnShow = v => { Polyline.drawPolyline( v ); Polyline.drawPolyBlobVerticesTranslucent( v ); };
         p.fnShow = this.fnShow;
         // show it
-        p.show( ctx );
+        p.show( ctxPoly );
       });
 
     } else {
@@ -299,7 +300,7 @@ export default class Tree {
 
       polylines.forEach( p => {
         p.simplify();
-        p.show( ctx );
+        p.show( ctxPoly );
       });
     }
   }

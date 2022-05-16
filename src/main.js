@@ -338,16 +338,16 @@ function initDrawing( newSeed ) {
       rows: CONFIG.canvasSize/20,
       k: 0.00085,
     }),
-    fnShow: v => {
+    fnShow: ( ctx, v ) => {
       // TODO: extract the decision-making and just pass the resultant function
-      ( CONFIG.fnShow & Polyline.drawingOptions.line ) && Polyline.drawPolyline( v, __SVGCTX );
-      ( CONFIG.fnShow & Polyline.drawingOptions.knuckles ) && Polyline.drawPolylineKnuckles( v, __SVGCTX );
-      ( CONFIG.fnShow & Polyline.drawingOptions.vertices ) && Polyline.drawPolyVertices( v, __SVGCTX );
-      ( CONFIG.fnShow & Polyline.drawingOptions.blobVerts ) && Polyline.drawPolyBlobVertices( v, __SVGCTX );
-      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsPlus ) && Polyline.drawPolyBlobVerticesPlus( v, __SVGCTX );
-      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsPlusPlus ) && Polyline.drawPolyBlobVerticesPlusPlus( v, __SVGCTX );
-      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsFilled ) && Polyline.drawPolyBlobVerticesFilled( v, __SVGCTX );
-      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsTranslucent ) && Polyline.drawPolyBlobVerticesTranslucent( v, __SVGCTX );    
+      ( CONFIG.fnShow & Polyline.drawingOptions.line ) && Polyline.drawPolyline( v, ctx );
+      ( CONFIG.fnShow & Polyline.drawingOptions.knuckles ) && Polyline.drawPolylineKnuckles( v, ctx );
+      ( CONFIG.fnShow & Polyline.drawingOptions.vertices ) && Polyline.drawPolyVertices( v, ctx );
+      ( CONFIG.fnShow & Polyline.drawingOptions.blobVerts ) && Polyline.drawPolyBlobVertices( v, ctx );
+      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsPlus ) && Polyline.drawPolyBlobVerticesPlus( v, ctx );
+      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsPlusPlus ) && Polyline.drawPolyBlobVerticesPlusPlus( v, ctx );
+      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsFilled ) && Polyline.drawPolyBlobVerticesFilled( v, ctx );
+      ( CONFIG.fnShow & Polyline.drawingOptions.blobVertsTranslucent ) && Polyline.drawPolyBlobVerticesTranslucent( v, ctx );    
     }
   });
 
@@ -395,6 +395,13 @@ window.draw = function() {
     __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( bgColorHex );
 
     tree.joinAndShow( __SVGCTX );
+
+    // Group the blobs if they exist
+    let blobs = document.querySelectorAll('svg .blob');
+    if ( blobs.length ) {
+      let g = __SVGCTX.group().attr('id', 'blobs');
+      blobs.forEach( b => g.add( b ));
+    }
 
     console.log( `Runtime: ${( t_end - t_start )/1000}s` );
   }

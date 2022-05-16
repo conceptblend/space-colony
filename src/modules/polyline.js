@@ -86,7 +86,7 @@ function blob( ctx, x, y, r, useFill = false, c ) {
     curve.push( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
   }
   path += `C${ curve.join(' ') }z`;
-  ctx.path( path ).fill( useFill ? c ?? "#000" : "none" ).stroke({ weight: 1, color: "#000" })
+  ctx.path( path ).fill( useFill ? c ?? "#000" : "none" ).stroke({ weight: 1, color: "#000" }).addClass('blob');
 }
 export default class Polyline {
   static drawingOptions = {
@@ -251,8 +251,8 @@ export default class Polyline {
 
     return false;
   }
-  show() {
-    this.fnShow( this.vertices );
+  show( ctx ) {
+    this.fnShow( ctx, this.vertices );
   }
 
   simplify() {
