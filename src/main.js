@@ -248,7 +248,7 @@ function initDrawing( newSeed ) {
  
   const getColorWay = () => colorWay[ Math.floor( Math.random() * colorWay.length ) ];
 
-  bgColorHex = "#F4E8C9";
+  bgColorHex = "#E9CF93";//"#F4E8C9";
   fgColorHex = "#000";
   // TODO: Replace after p5.js is removed
   // bgColor = color( bgColorHex ); //color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
