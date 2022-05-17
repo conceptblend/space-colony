@@ -114,7 +114,7 @@ export default class Polyline {
     ctx.polyline( myPolyline ).fill('none').stroke( style ?? { width: 1, color: '#000' })
   }
   // Draw the polyline AND the vertices at a static size
-  static drawPolyVertices( vertices, ctx ) {
+  static drawPolyVertices( vertices, ctx, style ) {
     let myPolyline = [];
     let r = 1.5;
     
