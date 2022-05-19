@@ -9,6 +9,7 @@ import FluidDistortion from './fluiddistortion.js';
 import Segment from './segment.js';
 import { nearEqual } from "./utils.js";
 import Vector2d from './vector2d.js';
+import { CONFIG } from './presets.js';
 
 export default class Tree {
   static steeringOptions = {
@@ -264,7 +265,7 @@ export default class Tree {
     let trimmed = this.dedupe( branches );
     /*DEBUG &&*/ console.log(`Trimmed: ${trimmed.length}`);
 
-    this.qt.show( ctxQt );
+    CONFIG.showQuadTree && this.qt.show( ctxQt );
 
     if ( USE_SEGMENTS ) {
     

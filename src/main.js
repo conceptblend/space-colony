@@ -51,11 +51,6 @@ let isRunning = false;
 let t_start = null;
 let t_end = null;
 
-let bgColor;
-let bgColorHex;
-let fgColor;
-let fgColorHex;
-
 // Parameter I/O
 let gui;
 let guiActions;
@@ -172,6 +167,7 @@ window.setup = function() {
   if ( undefined === CONFIG.containMethod ) CONFIG.containMethod = enumContainOptions.CENTERED_CIRCLE;
   if ( undefined === CONFIG.roots ) CONFIG.roots = 1;
   if ( undefined === CONFIG.tension ) CONFIG.tension = 0.4;
+  if ( undefined === CONFIG.showQuadTree ) CONFIG.showQuadTree = true;
 
   gui = new dat.gui.GUI();
 
@@ -193,7 +189,7 @@ window.setup = function() {
 
   let f_style = gui.addFolder('Style');
   f_style.add(CONFIG, 'fnShow', Polyline.drawingOptions);
-  f_style.add(CONFIG, 'showVertices');
+  f_style.add(CONFIG, 'showQuadTree');
   f_style.add(CONFIG, 'strokeWeight', 1, 256).step(1);
   f_style.add(CONFIG, 'tension', -2, 2).step(.1);
 
@@ -205,20 +201,24 @@ window.setup = function() {
   f_attractors.add(CONFIG, 'distortion', Tree.distortionOptions);
 
   guiActions = {
-    run: e => initDrawing(),
-    runRandom: e => initDrawing( Math.random() ),
+    run: e => initDrawing( 1 ),
+    runRandom: e => initDrawing( 1, Math.random() ),
+    runRandomSeries: e => initDrawing( 5, Math.random() ),
     export: e => downloadOutput()
   };
 
   gui.add(guiActions, 'run');
   gui.add(guiActions, 'runRandom');
+  gui.add(guiActions, 'runRandomSeries');
   gui.add(guiActions, 'export');
 }
 
-function initDrawing( newSeed ) {
+let seriesLength = 1;
+function initDrawing( count, newSeed ) {
   /**
    * ==== DRAWING initialization
    */
+  seriesLength = count;
 
   CONFIG.seed = newSeed ? newSeed : CONFIG.seed ?? Math.random();
   Math.seedrandom( CONFIG.seed )
@@ -234,29 +234,86 @@ function initDrawing( newSeed ) {
   // noiseSeed( CONFIG.seed );
   /** /IMPORTANT */
 
-  const colorWay = CONFIG.colorWay ?? [
-    "#4a6670ff",
-    "#565c76ff",
-    "#6d6498ff",
-    "#707398ff",
-    "#78a493ff",
-    "#7ea791ff",
-    "#989570ff",
-    "#987073ff",
-    "#739870ff"
+  // const colorWay = CONFIG.colorWay ?? [
+  //   "#4a6670ff",
+  //   "#565c76ff",
+  //   "#6d6498ff",
+  //   "#707398ff",
+  //   "#78a493ff",
+  //   "#7ea791ff",
+  //   "#989570ff",
+  //   "#987073ff",
+  //   "#739870ff"
+  // ];
+  CONFIG.colorWay = [
+    "#689bdbff",
+    "#e48eabff",
+    "#b9dbd8ff",
+    "#7293d6ff",
+    "#cf97a1ff",
+    "#ccd575ff",
+    "#d6b572ff",
+    "#d67293ff",
+    "#93d672ff"
+    // --
+    // "#e3a886ff",
+    // "#e6c682ff",
+    // "#e5cb94ff",
+    // "#cee08dff",
+    // "#8acfc3ff",
+    // "#73d6d0ff",
+    // "#7164d2ff",
+    // "#df5ec2ff",
+    // "#cf8a95ff",
+    // "#c38acfff",
+    // "#cfc38aff"
+    // --
+    // "#dc8875ff",
+    // "#d4806aff",
+    // "#b4d067ff",
+    // "#91f479ff",
+    // "#7ddf73ff",
+    // "#7cf4ceff",
+    // "#dc79f4ff",
+    // "#7991f4ff",
+    // "#f47991ff"
   ];
  
-  const getColorWay = () => colorWay[ Math.floor( Math.random() * colorWay.length ) ];
+  // const getColorWay = () => colorWay[ Math.floor( Math.random() * colorWay.length ) ];
+  const pickNcolours = ( n ) => {
+    let set = [],
+        cp = [ ...CONFIG.colorWay ];
 
-  bgColorHex = "#E9CF93";//"#F4E8C9";
-  fgColorHex = "#000";
-  // TODO: Replace after p5.js is removed
-  // bgColor = color( bgColorHex ); //color( getColorWay() ); // color("#00152B");//color(255); //color(238, 225, 221);
-  // fgColor = color( fgColorHex ); //color( "#523333" );; //color("#045A82");//color(0); // color(0,0,0); //color(34, 152, 152);
+    for( let i = 0; i < n; i++ ) {
+      let c = cp.splice( Math.floor( Math.random() * cp.length ), 1 );
+      console.log( c );
+      if ( c === undefined ) break;
+      set.push( c[0] );
+    }
+    return set;
+  }
 
+  let qtFill = "#E7F0CE";//pickNcolours( 1 )[ 0 ];
+  window.theme = {
+    colony: {
+      stroke: "#000",
+      fills: pickNcolours( 3 )
+    },
+    quadtree: {
+      fills: [
+        "#fff",
+        qtFill,
+        // "#DFF0F1",
+        // "#E9CF93",
+        // "#F4E8C9"
+      ],
+      stroke: qtFill//"#DFF0F1"
+    }
+  }
 
   __SVGCTX.clear();
-  __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( bgColorHex );
+  __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( window.theme.quadtree.fills[0] );
+
   
   // Optimization when drawing only the stroke
   // TODO: Replace after p5.js is removed
@@ -380,19 +437,19 @@ window.draw = function() {
     tree.grow();
 
     // To speed up generation, turn this off
-    if ( false && SHOWINPROGESS ) {
-      __SVGCTX.clear();
-      __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( bgColorHex );
+    // if ( SHOWINPROGESS ) {
+    //   __SVGCTX.clear();
+    //   __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( window.theme.quadtree.fills[0] );
       
-      tree.show( __SVGCTX );
-    }
+    //   tree.show( __SVGCTX );
+    // }
   } else {
     t_end = Date.now();
     noLoop();
     isRunning = false;
 
     __SVGCTX.clear();
-    __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( bgColorHex );
+    __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( window.theme.quadtree.fills[0] );
 
     tree.joinAndShow( __SVGCTX );
 
@@ -404,6 +461,11 @@ window.draw = function() {
     }
 
     console.log( `Runtime: ${( t_end - t_start )/1000}s` );
+
+    if ( --seriesLength >= 0 ) {
+      downloadOutput();
+      seriesLength && initDrawing( seriesLength, Math.random() )
+    }
   }
 }
 

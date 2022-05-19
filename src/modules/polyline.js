@@ -164,7 +164,7 @@ export default class Polyline {
   }
   // Draw blob vertices with stroke and fill
   static drawPolyBlobVerticesFilled( vertices, ctx ) {
-    const lepal = [
+    const lepal = window.theme.colony.fills;// ?? [
       // "#bfc5f5ff",
       // "#bff5f0ff",
       // "#f0bff5ff",
@@ -180,11 +180,15 @@ export default class Polyline {
       // "#d58381ff",
       // "#d581d2ff",
       // "#d2d581ff",
-      // --
-      "#e16982ff",
-      "#e1c769ff",
-      "#c769e1ff",
-    ];
+      // -- mothers day
+      // "#e16982ff",
+      // "#e1c769ff",
+      // "#c769e1ff",
+      // --- blue,pinky
+    //   "#689bdbff",
+    //   "#e48eabff",
+    //   "#b9dbd8ff",
+    // ];
     vertices.forEach(( v, i ) => {
       const n = Math.min( i+2, 8 );
       // blob( ctx, v.pos.x, v.pos.y, 4*n, false );
