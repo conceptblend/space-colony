@@ -235,78 +235,76 @@ function initDrawing( count, newSeed ) {
   /** /IMPORTANT */
 
   // const colorWay = CONFIG.colorWay ?? [
-  //   "#4a6670ff",
-  //   "#565c76ff",
-  //   "#6d6498ff",
-  //   "#707398ff",
-  //   "#78a493ff",
-  //   "#7ea791ff",
-  //   "#989570ff",
-  //   "#987073ff",
-  //   "#739870ff"
+  //   "#4a6670",
+  //   "#565c76",
+  //   "#6d6498",
+  //   "#707398",
+  //   "#78a493",
+  //   "#7ea791",
+  //   "#989570",
+  //   "#987073",
+  //   "#739870"
   // ];
   CONFIG.colorWay = [
-    "#689bdbff",
-    "#e48eabff",
-    "#b9dbd8ff",
-    "#7293d6ff",
-    "#cf97a1ff",
-    "#ccd575ff",
-    "#d6b572ff",
-    "#d67293ff",
-    "#93d672ff"
+    "#689bdb",
+    "#e48eab",
+    "#b9dbd8",
+    "#7293d6",
+    "#cf97a1",
+    "#ccd575",
+    "#d6b572",
+    "#d67293",
+    "#93d672"
     // --
-    // "#e3a886ff",
-    // "#e6c682ff",
-    // "#e5cb94ff",
-    // "#cee08dff",
-    // "#8acfc3ff",
-    // "#73d6d0ff",
-    // "#7164d2ff",
-    // "#df5ec2ff",
-    // "#cf8a95ff",
-    // "#c38acfff",
-    // "#cfc38aff"
+    // "#e3a886",
+    // "#e6c682",
+    // "#e5cb94",
+    // "#cee08d",
+    // "#8acfc3",
+    // "#73d6d0",
+    // "#7164d2",
+    // "#df5ec2",
+    // "#cf8a95",
+    // "#c38acf",
+    // "#cfc38a"
     // --
-    // "#dc8875ff",
-    // "#d4806aff",
-    // "#b4d067ff",
-    // "#91f479ff",
-    // "#7ddf73ff",
-    // "#7cf4ceff",
-    // "#dc79f4ff",
-    // "#7991f4ff",
-    // "#f47991ff"
+    // "#dc8875",
+    // "#d4806a",
+    // "#b4d067",
+    // "#91f479",
+    // "#7ddf73",
+    // "#7cf4ce",
+    // "#dc79f4",
+    // "#7991f4",
+    // "#f47991"
   ];
  
   // const getColorWay = () => colorWay[ Math.floor( Math.random() * colorWay.length ) ];
-  const pickNcolours = ( n ) => {
+  const pickNofM = ( n, m ) => {
     let set = [],
-        cp = [ ...CONFIG.colorWay ];
+        cp = [ ...m ];
 
     for( let i = 0; i < n; i++ ) {
       let c = cp.splice( Math.floor( Math.random() * cp.length ), 1 );
-      if ( c === undefined ) break;
+      if ( c === undefined ) break; // over reached
       set.push( c[0] );
     }
     return set;
   }
 
-  let qtFill = "#E7F0CE";//pickNcolours( 1 )[ 0 ];
+  let colonyFills = pickNofM( 3, CONFIG.colorWay ),
+      qtFill = colonyFills[ colonyFills.length-1 ]; //pickNofM( 1, colonyFills );//"#E7F0CE";//pickNcolours( 1 )[ 0 ];//"#DFF0F1"
   window.theme = {
     colony: {
       stroke: "#000",
-      fills: pickNcolours( 3 )
+      fills: colonyFills
     },
     quadtree: {
       fills: [
         "#fff",
         qtFill,
-        // "#DFF0F1",
-        // "#E9CF93",
-        // "#F4E8C9"
       ],
-      stroke: qtFill//"#DFF0F1"
+      stroke: qtFill
     }
   }
 
