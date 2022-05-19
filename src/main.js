@@ -286,7 +286,6 @@ function initDrawing( count, newSeed ) {
 
     for( let i = 0; i < n; i++ ) {
       let c = cp.splice( Math.floor( Math.random() * cp.length ), 1 );
-      console.log( c );
       if ( c === undefined ) break;
       set.push( c[0] );
     }
