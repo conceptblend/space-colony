@@ -240,7 +240,7 @@ const presets = {
     attractors: 5000,//25000,
     roots: 3,
     angle: 7,
-    canvasSize: 540*2,//540*2, /*540 * 2*/
+    canvasSize: 540,//540*2, /*540 * 2*/
     steering: /* src: tree.js */Tree.steeringOptions.ROUNDING,
     distortion: /* src: tree.js */Tree.distortionOptions.SINWAVE1,
     contain: true,
