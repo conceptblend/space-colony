@@ -53,3 +53,14 @@ I want to:
   1. ~~Loop through all branches and see if there are any overlapping branches. (Flatten? Use quadtree?)~~
   2. ~~Remove overlapping branch segments.~~
   3. When removing an overlapping branch, removing a branch doesn't remove its parent so you are just removing the node, not the segment. But if you remove the segment, the parent might be the parent of another branch so you don't necessarily want to remove it... This is the trouble of the nodes and segments being mixed.
+
+
+
+```zsh
+/Applications/Inkscape.app/Contents/MacOS/inkscape -o output.png -w 2160 -h 2160 input.svg
+```
+
+```zsh
+# BULK edits
+/Applications/Inkscape.app/Contents/MacOS/inkscape --actions="export-width:2160px;export-height:2160px;export-type:png;export-do;" *.svg
+```
