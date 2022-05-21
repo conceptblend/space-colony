@@ -174,8 +174,14 @@ window.setup = function() {
   gui = new dat.gui.GUI();
 
   gui.remember(CONFIG);
-
-  gui.add(CONFIG, 'description');
+  
+  
+  let f_attractors = gui.addFolder('Attractors');
+  f_attractors.add(CONFIG, 'attractors', 100, 25000).step(1);
+  f_attractors.add(CONFIG, 'contain');
+  f_attractors.add(CONFIG, 'containMethod', enumContainOptions);
+  f_attractors.add(CONFIG, 'bite');
+  f_attractors.add(CONFIG, 'distortion', Tree.distortionOptions);
   
   let f_branch = gui.addFolder('Branch');
   f_branch.add(CONFIG, 'roots', 1, 6).step(1);
@@ -183,38 +189,33 @@ window.setup = function() {
   f_branch.add(CONFIG, 'lifespan', 1, 256).step(1);
   f_branch.add(CONFIG, 'minDist', 1, 256).step(1);
   f_branch.add(CONFIG, 'maxDist', 1, 256).step(1);
-
+  
   let f_steering = gui.addFolder('Steering');
   
   f_steering.add(CONFIG, 'steering', Tree.steeringOptions);
   f_steering.add(CONFIG, 'angle', 1, 180).step(1);
-
+  
   let f_style = gui.addFolder('Style');
   f_style.add(CONFIG, 'fnShow', Polyline.drawingOptions);
-  f_style.add(CONFIG, 'blobSteps', 1, 25).step( 1 );
-  f_style.add(CONFIG, 'showQuadTree');
-  f_style.add(CONFIG, 'strokeWeight', 1, 256).step( 1 );
+  f_style.add(CONFIG, 'strokeWeight', 1, 3).step( 1 );
+  f_style.add(CONFIG, 'blobSteps', 3, 10).step( 1 );
   f_style.add(CONFIG, 'tension', -2, 2).step( .1 );
-
-  let f_attractors = gui.addFolder('Attractors');
-  f_attractors.add(CONFIG, 'attractors', 100, 25000).step(1);
-  f_attractors.add(CONFIG, 'contain');
-  f_attractors.add(CONFIG, 'containMethod', enumContainOptions);
-  f_attractors.add(CONFIG, 'bite');
-  f_attractors.add(CONFIG, 'distortion', Tree.distortionOptions);
-
+  f_style.add(CONFIG, 'showQuadTree');
+  
+  
   guiActions = {
     run: e => initDrawing( 1 ),
     runRandom: e => initDrawing( 1, Math.random() ),
     runRandomSeries: e => initDrawing( 5, Math.random() ),
     export: e => downloadOutput()
   };
-
-  gui.add(CONFIG, 'autoExport');
+  
+  gui.add(CONFIG, 'description');
   gui.add(guiActions, 'run');
   gui.add(guiActions, 'runRandom');
   gui.add(guiActions, 'runRandomSeries');
   gui.add(guiActions, 'export');
+  gui.add(CONFIG, 'autoExport');
 }
 
 let seriesLength = 1;
