@@ -188,8 +188,8 @@ export default class QuadTree {
   show( ctx ) {
     if ( !this.divided ) {
       ctx.rect( this.region.w, this.region.h )
-        .fill( this.items.length ? window.theme.quadtree.fills[1] : "none" )
-        .stroke({ weight: 0.5, color: window.theme.quadtree.stroke })
+        .fill( "none" /*this.items.length ? window.theme.quadtree.fills[1] : "none"*/ )
+        .stroke({ width: 0.25, color: window.theme.quadtree.stroke })
         .move( this.region.x, this.region.y );
     }
 

@@ -311,12 +311,6 @@ function initDrawing( count, newSeed ) {
   __SVGCTX.clear();
   __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( window.theme.quadtree.fills[0] );
 
-  
-  // Optimization when drawing only the stroke
-  // TODO: Replace after p5.js is removed
-  // stroke( fgColor );
-  // strokeWeight( CONFIG.strokeWeight ?? 2 ); // 16
-
   iterations = CONFIG.lifespan;
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

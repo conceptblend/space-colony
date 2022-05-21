@@ -86,7 +86,7 @@ function blob( ctx, x, y, r, useFill = false, c ) {
     curve.push( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
   }
   path += `C${ curve.join(' ') }z`;
-  ctx.path( path ).fill( useFill ? c ?? "#000" : "none" ).stroke({ weight: 1, color: "#000" }).addClass('blob');
+  ctx.path( path ).fill( useFill ? c ?? window.theme.colony.stroke : "none" ).stroke({ width: getConfig().strokeWeight, color: window.theme.colony.stroke }).addClass('blob');
 }
 export default class Polyline {
   static drawingOptions = {
@@ -111,7 +111,7 @@ export default class Polyline {
       myPolyline.push([ v.pos.x, v.pos.y ]);
     });
 
-    ctx.polyline( myPolyline ).fill('none').stroke( style ?? { width: 1, color: '#000' })
+    ctx.polyline( myPolyline ).fill('none').stroke( style ?? { width: getConfig().strokeWeight, color: window.theme.colony.stroke })
   }
   // Draw the polyline AND the vertices at a static size
   static drawPolyVertices( vertices, ctx, style ) {
@@ -120,9 +120,9 @@ export default class Polyline {
     
     vertices.forEach( v => {      
       myPolyline.push([ v.pos.x, v.pos.y ]);
-      ctx.circle( r * 2 ).move( v.pos.x - r, v.pos.y - r ).stroke( "none" ).fill( style?.color ?? "#000");
+      ctx.circle( r * 2 ).move( v.pos.x - r, v.pos.y - r ).stroke( "none" ).fill( style?.color ?? window.theme.colony.stroke);
     });
-    ctx.polyline( myPolyline ).fill('none').stroke( style ?? { width: 1, color: '#000' })
+    ctx.polyline( myPolyline ).fill('none').stroke( style ?? { width: getConfig().strokeWeight, color: window.theme.colony.stroke })
   }
   // Draw the polyline AND the vertices at a dynamic size
   static drawPolylineKnuckles( vertices, ctx, style ) {
@@ -132,21 +132,21 @@ export default class Polyline {
     vertices.forEach(( v, i ) => {
       myPolyline.push([ v.pos.x, v.pos.y ]);
       r = 2+i;
-      ctx.circle( r * 2 ).move( v.pos.x - r, v.pos.y - r ).stroke( "none" ).fill( style?.color ?? "#000");
+      ctx.circle( r * 2 ).move( v.pos.x - r, v.pos.y - r ).stroke( "none" ).fill( style?.color ?? window.theme.colony.stroke);
     });
 
-    ctx.polyline( myPolyline ).fill('none').stroke( style ?? { width: 1, color: '#000' })
+    ctx.polyline( myPolyline ).fill('none').stroke( style ?? { width: getConfig().strokeWeight, color: window.theme.colony.stroke })
   }
   // Draw just blob vertices
   static drawPolyBlobVertices( vertices, ctx ) {
     vertices.forEach(( v, i ) => {
-      blob( ctx, v.pos.x, v.pos.y, i+2, true, "#000" );
+      blob( ctx, v.pos.x, v.pos.y, i+2, true, window.theme.colony.stroke );
     });
   }
   // Draw blob vertices with an outer ring
   static drawPolyBlobVerticesPlus( vertices, ctx ) {
     vertices.forEach(( v, i ) => {
-      blob( ctx, v.pos.x, v.pos.y, i+2, true, "#000" );
+      blob( ctx, v.pos.x, v.pos.y, i+2, true, window.theme.colony.stroke );
       if( i % 2 === 0 ) {
         blob( ctx, v.pos.x, v.pos.y, i+5, false );
       }
