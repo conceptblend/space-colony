@@ -168,6 +168,8 @@ window.setup = function() {
   if ( undefined === CONFIG.roots ) CONFIG.roots = 1;
   if ( undefined === CONFIG.tension ) CONFIG.tension = 0.4;
   if ( undefined === CONFIG.showQuadTree ) CONFIG.showQuadTree = true;
+  if ( undefined === CONFIG.autoExport ) CONFIG.autoExport = false;
+  if ( undefined === CONFIG.blobSteps ) CONFIG.blobSteps = 6;
 
   gui = new dat.gui.GUI();
 
@@ -189,9 +191,10 @@ window.setup = function() {
 
   let f_style = gui.addFolder('Style');
   f_style.add(CONFIG, 'fnShow', Polyline.drawingOptions);
+  f_style.add(CONFIG, 'blobSteps', 1, 25).step( 1 );
   f_style.add(CONFIG, 'showQuadTree');
-  f_style.add(CONFIG, 'strokeWeight', 1, 256).step(1);
-  f_style.add(CONFIG, 'tension', -2, 2).step(.1);
+  f_style.add(CONFIG, 'strokeWeight', 1, 256).step( 1 );
+  f_style.add(CONFIG, 'tension', -2, 2).step( .1 );
 
   let f_attractors = gui.addFolder('Attractors');
   f_attractors.add(CONFIG, 'attractors', 100, 25000).step(1);
@@ -207,6 +210,7 @@ window.setup = function() {
     export: e => downloadOutput()
   };
 
+  gui.add(CONFIG, 'autoExport');
   gui.add(guiActions, 'run');
   gui.add(guiActions, 'runRandom');
   gui.add(guiActions, 'runRandomSeries');
@@ -454,7 +458,7 @@ window.draw = function() {
     console.log( `Runtime: ${( t_end - t_start )/1000}s` );
 
     if ( --seriesLength >= 0 ) {
-      downloadOutput();
+      if ( CONFIG.autoExport ) downloadOutput();
       seriesLength && initDrawing( seriesLength, Math.random() )
     }
   }

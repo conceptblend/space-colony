@@ -17,7 +17,7 @@ function getControlPoints(x0,y0,x1,y1,x2,y2,t){
 }
 
 function blob( ctx, x, y, r, useFill = false, c ) {
-  const steps = 6;
+  const steps = getConfig().blobSteps ?? 6;
   const angleIncrement = 360 / steps;
   let blobPoints = [];
   for ( let n=0; n<steps; n++ ) {

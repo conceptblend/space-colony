@@ -256,6 +256,7 @@ const presets = {
       "#c9bea8ff"
     ],
     seed: "get to the root of it",
+    blobSteps: 4,
   }, 
 };
 
