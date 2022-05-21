@@ -32,7 +32,7 @@ function blob( ctx, x, y, r, useFill = false, c ) {
   let vv = [ ...blobPoints ];
   const last = vv.length-1;
   const closeIt = true;
-  const tension = getConfig().tension || 0.5;
+  const tension = getConfig().tension ?? 0.5;
   
   // Do a first pass to calculate all of the control points and store them with
   // each vertex for access when drawing.
