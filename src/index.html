@@ -15,6 +15,7 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>
+    <!-- https://github.com/josephg/noisejs -->
     <script src='https://cdn.jsdelivr.net/gh//josephg/noisejs/perlin.js'></script>
     <script src="./lib/md5.js"></script>
   </head>
@@ -26,7 +27,7 @@
       /**
        * Animate some of the blobs if they're there!
        **/
-      path.blob:nth-child(5n+1) {
+      .animate path.blob:nth-child(5n+1) {
         animation-name: spinnn;
         animation-duration: 3s;
         animation-timing-function: ease-in-out;

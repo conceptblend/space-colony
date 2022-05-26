@@ -89,6 +89,7 @@ window.setup = function() {
   if ( undefined === CONFIG.showQuadTree ) CONFIG.showQuadTree = true;
   if ( undefined === CONFIG.autoExport ) CONFIG.autoExport = false;
   if ( undefined === CONFIG.blobSteps ) CONFIG.blobSteps = 6;
+  if ( undefined === CONFIG.animateBlobs ) CONFIG.animateBlobs = true;
 
   gui = new dat.gui.GUI();
 
@@ -120,6 +121,7 @@ window.setup = function() {
   f_style.add(CONFIG, 'blobSteps', 3, 10).step( 1 );
   f_style.add(CONFIG, 'tension', -2, 2).step( .1 );
   f_style.add(CONFIG, 'showQuadTree');
+  f_style.add(CONFIG, 'animateBlobs');
   
   
   guiActions = {
@@ -142,6 +144,7 @@ function initDrawing( count, newSeed ) {
   /**
    * ==== DRAWING initialization
    */
+  document.body.classList.remove("animate");
   seriesLength = count;
 
   CONFIG.seed = newSeed ? newSeed : CONFIG.seed ?? Math.random();
@@ -377,10 +380,12 @@ window.draw = function() {
 
     console.log( `Runtime: ${( t_end - t_start )/1000}s` );
 
-    if ( --seriesLength >= 0 ) {
-      if ( CONFIG.autoExport ) downloadOutput();
-      seriesLength && initDrawing( seriesLength, Math.random() )
+    if ( --seriesLength > 0 ) {
+      initDrawing( seriesLength, Math.random() )
+    } else {
+      CONFIG.animateBlobs && document.body.classList.add("animate");
     }
+    if ( CONFIG.autoExport ) downloadOutput();
   }
 }
 
@@ -443,6 +448,4 @@ function downloadOutput() {
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 window.setup();
-
