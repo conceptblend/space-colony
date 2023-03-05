@@ -90,6 +90,8 @@ window.setup = function() {
   if ( undefined === CONFIG.autoExport ) CONFIG.autoExport = false;
   if ( undefined === CONFIG.blobSteps ) CONFIG.blobSteps = 6;
   if ( undefined === CONFIG.animateBlobs ) CONFIG.animateBlobs = true;
+  if ( undefined === CONFIG.useFill ) CONFIG.useFill = false;
+
 
   gui = new dat.gui.GUI();
 
@@ -119,6 +121,7 @@ window.setup = function() {
   f_style.add(CONFIG, 'fnShow', Polyline.drawingOptions);
   f_style.add(CONFIG, 'strokeWeight', 1, 3).step( 1 );
   f_style.add(CONFIG, 'blobSteps', 3, 10).step( 1 );
+  f_style.add(CONFIG, 'useFill');
   f_style.add(CONFIG, 'tension', -2, 2).step( .1 );
   f_style.add(CONFIG, 'showQuadTree');
   f_style.add(CONFIG, 'animateBlobs');

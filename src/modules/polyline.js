@@ -20,18 +20,19 @@ function blob( ctx, x, y, r, useFill = false, c ) {
   const steps = getConfig().blobSteps ?? 6;
   const angleIncrement = 360 / steps;
   let blobPoints = [];
+  const D = r*0.5,
+        RAD = Math.PI / 180;
   for ( let n=0; n<steps; n++ ) {
-    let angle = n * angleIncrement * Math.PI / 180;
+    let angle = n * angleIncrement * RAD;
     blobPoints.push({
-      x: x + Math.cos( angle ) * ( r + Math.random()*r*0.5 ),
-      y: y + Math.sin( angle ) * ( r + Math.random()*r*0.5 )
+      x: x + Math.cos( angle ) * ( r + Math.random()*D ),
+      y: y + Math.sin( angle ) * ( r + Math.random()*D )
     });
   }
 
   // Make a copy so we can augment the structure
   let vv = [ ...blobPoints ];
   const last = vv.length-1;
-  const closeIt = true;
   const tension = getConfig().tension ?? 0.5;
   
   // Do a first pass to calculate all of the control points and store them with
@@ -41,35 +42,25 @@ function blob( ctx, x, y, r, useFill = false, c ) {
       Something is janky in this logic that bends the first and last
       vertices in an unexpected way when leaving it open. Fix it :)
     **/
-    const v0i = ( i === 0   ) ? ( closeIt ? last : 0  ) : i-1;
-    const v2i = ( i === last ) ? ( closeIt ? 0   : last) : i+1; 
+    const v0i = ( i === 0   ) ? last : i-1;
+    const v2i = ( i === last ) ? 0 : i+1; 
     const v0 = vv[ v0i ];
     const v2 = vv[ v2i ];
     
-    const t = (( i === 0 || i === last ) && !closeIt ) ? 0 : tension;
+    const t = tension;//(( i === 0 || i === last ) && !closeIt ) ? 0 : tension;
     const controls = getControlPoints(
       v0.x, v0.y, v.x, v.y, v2.x, v2.y, t
     );
 
-    if ( closeIt ) {
-      v.cIn = {
-        x: controls[ 0 ],
-        y: controls[ 1 ]
-      };
-      v.cOut = {
-        x: controls[ 2 ],
-        y: controls[ 3 ]
-      };
-    } else {
-      v.cIn = {
-        x: ( i === 0 ) ? v.x : controls[ 0 ],
-        y: ( i === 0 ) ? v.y : controls[ 1 ]
-      };
-      v.cOut = {
-        x: ( i === last ) ? v.x : controls[ 2 ],
-        y: ( i === last ) ? v.y : controls[ 3 ]
-      };
-    }
+
+    v.cIn = {
+      x: controls[ 0 ],
+      y: controls[ 1 ]
+    };
+    v.cOut = {
+      x: controls[ 2 ],
+      y: controls[ 3 ]
+    };
   });
 
   let curve = [];
@@ -81,12 +72,10 @@ function blob( ctx, x, y, r, useFill = false, c ) {
     curve.push( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
   };
 
-  if ( closeIt ) {
-    const v0 = vv[ last ];
-    const v1 = vv[ 0 ];
-    curve.push( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
-  }
-  path += `C${ curve.join(' ') }z`;
+  const v0 = vv[ last ];
+  const v1 = vv[ 0 ];
+  curve.push( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
+  path += `C${ curve.join(' ') }Z`;
   ctx.path( path ).fill( useFill ? c ?? window.theme.colony.stroke : "none" ).stroke({ width: getConfig().strokeWeight, color: window.theme.colony.stroke }).addClass('blob');
 }
 export default class Polyline {
@@ -140,14 +129,16 @@ export default class Polyline {
   }
   // Draw just blob vertices
   static drawPolyBlobVertices( vertices, ctx ) {
+    const useFill = getConfig().useFill;
     vertices.forEach(( v, i ) => {
-      blob( ctx, v.pos.x, v.pos.y, i+2, true, window.theme.colony.stroke );
+      blob( ctx, v.pos.x, v.pos.y, i+2, useFill, window.theme.colony.stroke );
     });
   }
   // Draw blob vertices with an outer ring
   static drawPolyBlobVerticesPlus( vertices, ctx ) {
+    const useFill = getConfig().useFill;
     vertices.forEach(( v, i ) => {
-      blob( ctx, v.pos.x, v.pos.y, i+2, true, window.theme.colony.stroke );
+      blob( ctx, v.pos.x, v.pos.y, i+2, useFill, window.theme.colony.stroke );
       if( i % 2 === 0 ) {
         blob( ctx, v.pos.x, v.pos.y, i+5, false );
       }

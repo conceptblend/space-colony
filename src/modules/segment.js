@@ -51,7 +51,6 @@ export default class Segment {
     
     return false;
   }
-
   show( ctx ) {
     ctx.line( this.x1, this.y1, this.x2, this.y2 );
   }
