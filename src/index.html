@@ -23,29 +23,5 @@
   <body>
     <div id="render"></div>
     <script type="module" src="main.js"></script>
-    <style type="text/css">
-      /**
-       * Animate some of the blobs if they're there!
-       **/
-      .animate path.blob:nth-child(5n+1) {
-        animation-name: spinnn;
-        animation-duration: 3s;
-        animation-timing-function: ease-in-out;
-        animation-iteration-count: infinite;
-        transform-box: fill-box;
-        transform-origin: center;
-      }
-      @keyframes spinnn {
-        0% {
-          transform: rotate(0deg);
-        }
-        50% {
-          transform: rotate(720deg);
-        }
-        100% {
-          transform: rotate(0deg);
-        }
-      }
-    </style>
   </body>
 </html>

@@ -89,7 +89,6 @@ window.setup = function() {
   if ( undefined === CONFIG.showQuadTree ) CONFIG.showQuadTree = true;
   if ( undefined === CONFIG.autoExport ) CONFIG.autoExport = false;
   if ( undefined === CONFIG.blobSteps ) CONFIG.blobSteps = 6;
-  if ( undefined === CONFIG.animateBlobs ) CONFIG.animateBlobs = true;
   if ( undefined === CONFIG.useFill ) CONFIG.useFill = false;
 
 
@@ -118,14 +117,13 @@ window.setup = function() {
   f_steering.add(CONFIG, 'angle', 1, 180).step(1);
   
   let f_style = gui.addFolder('Style');
+  f_style.add(CONFIG, 'canvasSize', 128, 4096).step(2);
   f_style.add(CONFIG, 'fnShow', Polyline.drawingOptions);
   f_style.add(CONFIG, 'strokeWeight', 1, 3).step( 1 );
   f_style.add(CONFIG, 'blobSteps', 3, 10).step( 1 );
   f_style.add(CONFIG, 'useFill');
   f_style.add(CONFIG, 'tension', -2, 2).step( .1 );
   f_style.add(CONFIG, 'showQuadTree');
-  f_style.add(CONFIG, 'animateBlobs');
-  
   
   guiActions = {
     run: e => initDrawing( 1 ),
@@ -147,7 +145,6 @@ function initDrawing( count, newSeed ) {
   /**
    * ==== DRAWING initialization
    */
-  document.body.classList.remove("animate");
   seriesLength = count;
 
   CONFIG.seed = newSeed ? newSeed : CONFIG.seed ?? Math.random();
@@ -238,8 +235,11 @@ function initDrawing( count, newSeed ) {
     }
   }
 
-  __SVGCTX.clear();
-  __SVGCTX.rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( window.theme.quadtree.fills[0] );
+  __SVGCTX
+    .size( CONFIG.canvasSize, CONFIG.canvasSize )
+    .viewbox(`0 0 ${ CONFIG.canvasSize } ${ CONFIG.canvasSize }`)
+    .clear()
+    .rect( CONFIG.canvasSize, CONFIG.canvasSize ).fill( window.theme.quadtree.fills[0] );
 
   iterations = CONFIG.lifespan;
 
@@ -385,8 +385,6 @@ window.draw = function() {
 
     if ( --seriesLength > 0 ) {
       initDrawing( seriesLength, Math.random() )
-    } else {
-      CONFIG.animateBlobs && document.body.classList.add("animate");
     }
     if ( CONFIG.autoExport ) downloadOutput();
   }
