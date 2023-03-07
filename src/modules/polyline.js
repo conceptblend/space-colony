@@ -16,6 +16,10 @@ function getControlPoints(x0,y0,x1,y1,x2,y2,t){
   ];
 }
 
+function sampleArray( arr ) {
+  return arr[ Math.floor( Math.random() * arr.length ) ];
+}
+
 function blob( ctx, x, y, r, useFill = false, c ) {
   const steps = getConfig().blobSteps ?? 6;
   const angleIncrement = 360 / steps;
@@ -51,8 +55,6 @@ function blob( ctx, x, y, r, useFill = false, c ) {
     const controls = getControlPoints(
       v0.x, v0.y, v.x, v.y, v2.x, v2.y, t
     );
-
-
     v.cIn = {
       x: controls[ 0 ],
       y: controls[ 1 ]
@@ -76,7 +78,11 @@ function blob( ctx, x, y, r, useFill = false, c ) {
   const v1 = vv[ 0 ];
   curve.push( v0.cOut.x, v0.cOut.y, v1.cIn.x, v1.cIn.y, v1.x, v1.y );
   path += `C${ curve.join(' ') }Z`;
-  ctx.path( path ).fill( useFill ? c ?? window.theme.colony.stroke : "none" ).stroke({ width: getConfig().strokeWeight, color: window.theme.colony.stroke }).addClass('blob');
+  ctx
+    .path( path )
+    .fill( useFill ? c ?? "#000" : "none" )
+    .stroke({ width: getConfig().strokeWeight, color: window.theme.colony.stroke ?? "#000" })
+    .addClass('blob');
 }
 export default class Polyline {
   static drawingOptions = {
@@ -131,14 +137,14 @@ export default class Polyline {
   static drawPolyBlobVertices( vertices, ctx ) {
     const useFill = getConfig().useFill;
     vertices.forEach(( v, i ) => {
-      blob( ctx, v.pos.x, v.pos.y, i+2, useFill, window.theme.colony.stroke );
+      blob( ctx, v.pos.x, v.pos.y, i+2, useFill, sampleArray( window.theme.colony.fills ) );
     });
   }
   // Draw blob vertices with an outer ring
   static drawPolyBlobVerticesPlus( vertices, ctx ) {
     const useFill = getConfig().useFill;
     vertices.forEach(( v, i ) => {
-      blob( ctx, v.pos.x, v.pos.y, i+2, useFill, window.theme.colony.stroke );
+      blob( ctx, v.pos.x, v.pos.y, i+2, useFill, sampleArray( window.theme.colony.fills ) );
       if( i % 2 === 0 ) {
         blob( ctx, v.pos.x, v.pos.y, i+5, false );
       }
@@ -148,10 +154,10 @@ export default class Polyline {
   static drawPolyBlobVerticesPlusPlus( vertices, ctx ) {
     vertices.forEach(( v, i ) => {
       const n = i+2;
-      // blob( ctx, v.pos.x, v.pos.y, 4*n, false );
+      // blob( ctx, v.pos.x, v.pos.y, 4*n, false ) );
       blob( ctx, v.pos.x, v.pos.y, 3*n, false );
-      blob( ctx, v.pos.x, v.pos.y, 2*n, false );
-      blob( ctx, v.pos.x, v.pos.y, n, true );
+      blob( ctx, v.pos.x, v.pos.y, 2*n, true, sampleArray( window.theme.colony.fills ) );
+      blob( ctx, v.pos.x, v.pos.y, n, true, sampleArray( window.theme.colony.fills ) );
     });
   }
   // Draw blob vertices with stroke and fill
