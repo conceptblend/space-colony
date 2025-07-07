@@ -6,9 +6,9 @@
  * @property {number} y         Y-Position
  * @property {number} w         Width
  * @property {number} h         Height
- */ 
+ */
 export class Rect {
-  constructor( x, y, w, h ) {
+  constructor(x, y, w, h) {
     this.x = x;
     this.y = y;
     this.w = w;
@@ -21,14 +21,16 @@ export class Rect {
     this.mx = x + w * 0.5;
     this.my = y + h * 0.5;
   }
-  contains( node ) {
-    return node.pos.x >= this.l &&
+  contains(node) {
+    return (
+      node.pos.x >= this.l &&
       node.pos.x < this.r &&
       node.pos.y >= this.t &&
-      node.pos.y < this.b;
+      node.pos.y < this.b
+    );
   }
 
-  intersects( region ) {
+  intersects(region) {
     //
     if (this.l > region.r || this.r < region.l) return false;
     if (this.t > region.b || this.b < region.t) return false;
@@ -43,7 +45,7 @@ export default class QuadTree {
    * @class QuadTree
    * @param {Rect} region      Region bounding box
    * @param {number} capacity  Maximum capacity
-   */ 
+   */
   constructor(region, capacity) {
     this.region = region;
     this.capacity = capacity;
@@ -53,7 +55,7 @@ export default class QuadTree {
       nw: null,
       ne: null,
       sw: null,
-      se: null
+      se: null,
     };
   }
 
@@ -62,108 +64,105 @@ export default class QuadTree {
   }
 
   subdivide() {
-    if ( this.region.w <= 16 || this.region.h <= 16 ) return false;
+    if (this.region.w <= 16 || this.region.h <= 16) return false;
 
     let halfW = this.region.w * 0.5;
     let halfH = this.region.h * 0.5;
 
     this.subregions.nw = new QuadTree(
-      new Rect(
-        this.region.x,
-        this.region.y,
-        halfW,
-        halfH
-      ),
-      this.capacity
+      new Rect(this.region.x, this.region.y, halfW, halfH),
+      this.capacity,
     );
     this.subregions.ne = new QuadTree(
-      new Rect(
-        this.region.mx,
-        this.region.y,
-        halfW,
-        halfH
-      ),
-      this.capacity
+      new Rect(this.region.mx, this.region.y, halfW, halfH),
+      this.capacity,
     );
     this.subregions.sw = new QuadTree(
-      new Rect(
-        this.region.x,
-        this.region.my,
-        halfW,
-        halfH
-      ),
-      this.capacity
+      new Rect(this.region.x, this.region.my, halfW, halfH),
+      this.capacity,
     );
     this.subregions.se = new QuadTree(
-      new Rect(
-        this.region.mx,
-        this.region.my,
-        halfW,
-        halfH
-      ),
-      this.capacity
+      new Rect(this.region.mx, this.region.my, halfW, halfH),
+      this.capacity,
     );
 
     this.divided = true;
 
     // insert all previous nodes
-    while ( this.items.length ) {
+    while (this.items.length) {
       // attempt to insert into child regions
-      this.insertIntoRegion( this.items.pop() );
+      this.insertIntoRegion(this.items.pop());
     }
 
     return this.divided;
   }
 
-  query( region ) {
+  query(region) {
     let itemsFound = [];
 
-    if ( !this.region.intersects( region ) ) return itemsFound; // empty array
+    if (!this.region.intersects(region)) return itemsFound; // empty array
 
-    if ( this.divided ) {
-      itemsFound = itemsFound.concat( this.subregions.nw.query( region ) );
-      itemsFound = itemsFound.concat( this.subregions.ne.query( region ) );
-      itemsFound = itemsFound.concat( this.subregions.sw.query( region ) );
-      itemsFound = itemsFound.concat( this.subregions.se.query( region ) );
+    if (this.divided) {
+      itemsFound = itemsFound.concat(this.subregions.nw.query(region));
+      itemsFound = itemsFound.concat(this.subregions.ne.query(region));
+      itemsFound = itemsFound.concat(this.subregions.sw.query(region));
+      itemsFound = itemsFound.concat(this.subregions.se.query(region));
     } else {
-      itemsFound = itemsFound.concat( this.items.filter(i => region.contains( i )) );
+      itemsFound = itemsFound.concat(
+        this.items.filter((i) => region.contains(i)),
+      );
     }
     return itemsFound;
   }
 
   flatten() {
-    if ( !this.divided ) return [].concat(this.items);
+    if (!this.divided) return [].concat(this.items);
 
     return [].concat(
       this.subregions.nw.flatten(),
       this.subregions.ne.flatten(),
       this.subregions.sw.flatten(),
-      this.subregions.se.flatten()
+      this.subregions.se.flatten(),
     );
   }
 
   insert(node) {
-    if ( !this.region.contains( node ) ) return false; // not in my region
+    if (!this.region.contains(node)) return false; // not in my region
 
-    if ( this.hasCapacity() ) {
-      this.items.push( node );
+    if (this.hasCapacity()) {
+      this.items.push(node);
       return true;
     }
 
     // no capacity so subdivide if necessary
-    if ( !this.divided ) {
-      if ( !this.subdivide() ) return false; // failed to subdivide; dropping new node
+    if (!this.divided) {
+      if (!this.subdivide()) return false; // failed to subdivide; dropping new node
     }
     // attempt to insert into child regions
-    return this.insertIntoRegion( node );
+    return this.insertIntoRegion(node);
   }
 
   insertIntoRegion(node) {
-    if ( this.subregions.nw.insert( node ) ) return true;
-    if ( this.subregions.ne.insert( node ) ) return true;
-    if ( this.subregions.sw.insert( node ) ) return true;
-    if ( this.subregions.se.insert( node ) ) return true;
+    if (this.subregions.nw.insert(node)) return true;
+    if (this.subregions.ne.insert(node)) return true;
+    if (this.subregions.sw.insert(node)) return true;
+    if (this.subregions.se.insert(node)) return true;
     return false;
+  }
+  clear() {
+    this.items = [];
+    if (this.divided) {
+      this.subregions.nw.clear();
+      this.subregions.ne.clear();
+      this.subregions.sw.clear();
+      this.subregions.se.clear();
+    }
+    this.subregions = {
+      nw: null,
+      ne: null,
+      sw: null,
+      se: null,
+    };
   }
 
   print() {
@@ -185,17 +184,20 @@ export default class QuadTree {
     if (this.subregions.se !== null) this.subregions.se.print();
   }
 
-  show( ctx ) {
-    if ( !this.divided ) {
-      ctx.rect( this.region.w, this.region.h )
-        .fill( "none" /*this.items.length ? window.theme.quadtree.fills[1] : "none"*/ )
+  show(ctx) {
+    if (!this.divided) {
+      ctx
+        .rect(this.region.w, this.region.h)
+        .fill(
+          "none" /*this.items.length ? window.theme.quadtree.fills[1] : "none"*/,
+        )
         .stroke({ width: 0.25, color: window.theme.quadtree.stroke })
-        .move( this.region.x, this.region.y );
+        .move(this.region.x, this.region.y);
     }
 
-    if (this.subregions.nw !== null) this.subregions.nw.show( ctx );
-    if (this.subregions.ne !== null) this.subregions.ne.show( ctx );
-    if (this.subregions.sw !== null) this.subregions.sw.show( ctx );
-    if (this.subregions.se !== null) this.subregions.se.show( ctx );
+    if (this.subregions.nw !== null) this.subregions.nw.show(ctx);
+    if (this.subregions.ne !== null) this.subregions.ne.show(ctx);
+    if (this.subregions.sw !== null) this.subregions.sw.show(ctx);
+    if (this.subregions.se !== null) this.subregions.se.show(ctx);
   }
 }

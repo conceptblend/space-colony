@@ -8,13 +8,15 @@
 #
 
 if [[ $1 ]] then
+  IN_FILE="$1"
+  # IN_FILE=$(printf '%q' "$1")
   if [[ $2 ]] then
-    FILE=$2
+    FILE=$(printf '%q' "$2")
   else
     FILE="occ.svg"
   fi
 
-  echo "Processing..."
+  echo "Processing $IN_FILE..."
 
   # IGNORE LAYERS
   # vpype -v read $1 reloop linemerge linesimplify occult -i -r linesort layout --align center --valign center --fit-to-margins 0.05in 5.5inx8.5in filter --min-length 1mm write -f svg $FILE
@@ -40,13 +42,15 @@ if [[ $1 ]] then
   #
   # This is a shortcut to feed the most recently downloaded SVG into this pipeline:
   # $> ls -t ~/Downloads/*.svg | head -1 | xargs ./preplot.sh
+  # To allow for filenames that include escape characters (like spaces) to be consumed by `xargs`, do this:
+  # $> \ls -t ~/Downloads/*.svg | head -1 | tr \\n \\0 | xargs -0 ./preplot.sh
 
   vpype \
     read --attr fill \
-    $1 \
+    $IN_FILE \
     reloop \
     occult -i -r \
-    layout --align center --valign center --fit-to-margins 0.05in 5.5inx8.5in \
+    layout --align center --valign center --fit-to-margins 0.05in 8.5inx8.5in \
     filter --min-length 0.05mm \
     write -f svg $FILE
   
